@@ -90,13 +90,13 @@ export default function CrashRecoveryTimeline() {
   const current = STEPS[step];
 
   return (
-    <div className="bg-white rounded-xl border border-ink-200 overflow-hidden my-8 not-prose">
-      <div className="bg-cream-100 border-b border-ink-200 px-6 py-4 flex items-center justify-between">
+    <div className="bg-white dark:bg-night-200 rounded-xl border border-ink-200 dark:border-night-400 overflow-hidden my-8 not-prose">
+      <div className="bg-cream-100 dark:bg-night-300 border-b border-ink-200 dark:border-night-400 px-6 py-4 flex items-center justify-between">
         <div>
-          <div className="text-xs font-medium text-ink-500 uppercase tracking-wider mb-1">
+          <div className="text-xs font-medium text-ink-500 dark:text-night-700 uppercase tracking-wider mb-1">
             Interactive timeline — press play
           </div>
-          <div className="font-serif text-lg font-medium text-ink-900">
+          <div className="font-serif text-lg font-medium text-ink-900 dark:text-night-900">
             Crash recovery + concurrent claim
           </div>
         </div>
@@ -104,7 +104,7 @@ export default function CrashRecoveryTimeline() {
           <button
             onClick={() => setStep(Math.max(0, step - 1))}
             disabled={step === 0}
-            className="p-2 rounded hover:bg-cream-200 disabled:opacity-40 transition"
+            className="p-2 rounded hover:bg-cream-200 dark:hover:bg-night-400 disabled:opacity-40 transition text-ink-700 dark:text-night-800"
           >
             <SkipBack size={16} />
           </button>
@@ -121,7 +121,7 @@ export default function CrashRecoveryTimeline() {
           <button
             onClick={() => setStep(Math.min(STEPS.length - 1, step + 1))}
             disabled={step === STEPS.length - 1}
-            className="p-2 rounded hover:bg-cream-200 disabled:opacity-40 transition"
+            className="p-2 rounded hover:bg-cream-200 dark:hover:bg-night-400 disabled:opacity-40 transition text-ink-700 dark:text-night-800"
           >
             <SkipForward size={16} />
           </button>
@@ -130,7 +130,7 @@ export default function CrashRecoveryTimeline() {
               setStep(0);
               setPlaying(false);
             }}
-            className="p-2 rounded hover:bg-cream-200 transition"
+            className="p-2 rounded hover:bg-cream-200 dark:hover:bg-night-400 transition text-ink-700 dark:text-night-800"
           >
             <RotateCcw size={16} />
           </button>
@@ -145,14 +145,14 @@ export default function CrashRecoveryTimeline() {
               key={i}
               onClick={() => setStep(i)}
               className={`h-1.5 flex-1 rounded-full transition ${
-                i <= step ? 'bg-rust-500' : 'bg-ink-200'
+                i <= step ? 'bg-rust-500' : 'bg-ink-200 dark:bg-night-400'
               }`}
             />
           ))}
         </div>
-        <div className="flex justify-between mt-1.5 text-[10px] font-mono text-ink-500">
+        <div className="flex justify-between mt-1.5 text-[10px] font-mono text-ink-500 dark:text-night-700">
           {STEPS.map((s, i) => (
-            <span key={i} className={i === step ? 'text-rust-600 font-semibold' : ''}>
+            <span key={i} className={i === step ? 'text-rust-600 dark:text-rust-300 font-semibold' : ''}>
               T{i}
             </span>
           ))}
@@ -170,8 +170,8 @@ export default function CrashRecoveryTimeline() {
             transition={{ duration: 0.25 }}
             className="mb-5"
           >
-            <div className="font-serif text-xl font-medium text-ink-900 mb-2">{current.label}</div>
-            <div className="text-sm text-ink-700 leading-relaxed">{current.desc}</div>
+            <div className="font-serif text-xl font-medium text-ink-900 dark:text-night-900 mb-2">{current.label}</div>
+            <div className="text-sm text-ink-700 dark:text-night-800 leading-relaxed">{current.desc}</div>
           </motion.div>
         </AnimatePresence>
 
@@ -179,7 +179,7 @@ export default function CrashRecoveryTimeline() {
         <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-6">
           {/* Workers */}
           <div>
-            <div className="text-xs font-medium text-ink-500 uppercase tracking-wider mb-3">
+            <div className="text-xs font-medium text-ink-500 dark:text-night-700 uppercase tracking-wider mb-3">
               KGS Workers
             </div>
             <div className="space-y-2">
@@ -211,26 +211,26 @@ export default function CrashRecoveryTimeline() {
 
           {/* ZK */}
           <div className="md:w-56">
-            <div className="text-xs font-medium text-ink-500 uppercase tracking-wider mb-3">
+            <div className="text-xs font-medium text-ink-500 dark:text-night-700 uppercase tracking-wider mb-3">
               ZooKeeper State
             </div>
-            <div className="bg-rust-50 border border-rust-200 rounded-lg p-4">
-              <div className="text-xs text-rust-600 mb-1">/kgs/next_available</div>
+            <div className="bg-rust-50 dark:bg-[#1F0E07] border border-rust-200 dark:border-[#3D2012] rounded-lg p-4">
+              <div className="text-xs text-rust-600 dark:text-rust-300 mb-1">/kgs/next_available</div>
               <AnimatePresence mode="wait">
                 <motion.div
                   key={current.zk.value}
                   initial={{ opacity: 0, y: 4 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -4 }}
-                  className="font-mono text-xl font-semibold text-rust-700 tabular-nums"
+                  className="font-mono text-xl font-semibold text-rust-700 dark:text-rust-300 tabular-nums"
                 >
                   {current.zk.value}
                 </motion.div>
               </AnimatePresence>
-              <div className="text-[10px] text-rust-600 mt-2 font-mono">
+              <div className="text-[10px] text-rust-600 dark:text-rust-300 mt-2 font-mono">
                 version = {current.zk.version}
               </div>
-              <div className="mt-3 pt-3 border-t border-rust-200 text-[11px] text-ink-600 leading-relaxed">
+              <div className="mt-3 pt-3 border-t border-rust-200 dark:border-[#3D2012] text-[11px] text-ink-600 dark:text-night-700 leading-relaxed">
                 Replicated across 3 ZK nodes. Every write needs majority ack.
               </div>
             </div>
@@ -243,17 +243,17 @@ export default function CrashRecoveryTimeline() {
 
 function workerStyles(state) {
   return {
-    alive: 'bg-teal-50 border-teal-200 text-teal-900',
-    dead: 'bg-ink-100 border-ink-200 text-ink-500 opacity-75',
-    waiting: 'bg-amber-50 border-amber-200 text-amber-900',
-    retry: 'bg-rust-50 border-rust-200 text-rust-900',
+    alive: 'bg-teal-50 dark:bg-[#071A12] border-teal-200 dark:border-[#1A3D2E] text-teal-900 dark:text-teal-300',
+    dead: 'bg-ink-100 dark:bg-night-300 border-ink-200 dark:border-night-400 text-ink-500 dark:text-night-600 opacity-75',
+    waiting: 'bg-amber-50 dark:bg-[#1A1400] border-amber-200 dark:border-[#3D3000] text-amber-900 dark:text-amber-300',
+    retry: 'bg-rust-50 dark:bg-[#1F0E07] border-rust-200 dark:border-[#3D2012] text-rust-900 dark:text-rust-300',
   }[state];
 }
 
 function workerBadge(state) {
   return {
     alive: 'bg-teal-500 text-white',
-    dead: 'bg-ink-300 text-ink-500',
+    dead: 'bg-ink-300 dark:bg-night-500 text-ink-500 dark:text-night-700',
     waiting: 'bg-amber-500 text-white',
     retry: 'bg-rust-500 text-white',
   }[state];
@@ -261,9 +261,9 @@ function workerBadge(state) {
 
 function workerStateColor(state) {
   return {
-    alive: 'text-teal-600',
-    dead: 'text-ink-400',
-    waiting: 'text-amber-600',
-    retry: 'text-rust-600',
+    alive: 'text-teal-600 dark:text-teal-400',
+    dead: 'text-ink-400 dark:text-night-600',
+    waiting: 'text-amber-600 dark:text-amber-400',
+    retry: 'text-rust-600 dark:text-rust-300',
   }[state];
 }

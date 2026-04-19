@@ -55,16 +55,16 @@ export default function RedisPlacementComparison() {
           key={o.name}
           className={`rounded-xl border p-5 ${
             o.verdict === 'best'
-              ? 'bg-teal-50 border-teal-300 ring-1 ring-teal-300'
+              ? 'bg-teal-50 dark:bg-[#071A12] border-teal-300 dark:border-[#1A3D2E] ring-1 ring-teal-300 dark:ring-[#1A3D2E]'
               : o.verdict === 'bad'
-              ? 'bg-cream-50 border-ink-200 opacity-80'
-              : 'bg-white border-ink-200'
+              ? 'bg-cream-50 dark:bg-night-300 border-ink-200 dark:border-night-400 opacity-80'
+              : 'bg-white dark:bg-night-200 border-ink-200 dark:border-night-400'
           }`}
         >
           <div className="flex items-start justify-between mb-3">
             <div>
-              <div className="font-serif text-lg font-medium text-ink-900">{o.name}</div>
-              <div className="text-xs text-ink-500">{o.sub}</div>
+              <div className="font-serif text-lg font-medium text-ink-900 dark:text-night-900">{o.name}</div>
+              <div className="text-xs text-ink-500 dark:text-night-700">{o.sub}</div>
             </div>
             {o.verdict === 'best' && (
               <div className="text-[10px] font-semibold bg-teal-600 text-white px-2 py-0.5 rounded">
@@ -80,10 +80,10 @@ export default function RedisPlacementComparison() {
 
           <div className="space-y-3">
             <div>
-              <div className="text-[11px] font-medium text-teal-700 uppercase tracking-wider mb-1.5">Pros</div>
+              <div className="text-[11px] font-medium text-teal-700 dark:text-teal-400 uppercase tracking-wider mb-1.5">Pros</div>
               <ul className="space-y-1">
                 {o.pros.map((p, i) => (
-                  <li key={i} className="flex items-start gap-1.5 text-xs text-ink-700 leading-relaxed">
+                  <li key={i} className="flex items-start gap-1.5 text-xs text-ink-700 dark:text-night-800 leading-relaxed">
                     <Check size={11} className="mt-0.5 text-teal-600 flex-shrink-0" />
                     <span>{p}</span>
                   </li>
@@ -92,10 +92,10 @@ export default function RedisPlacementComparison() {
             </div>
 
             <div>
-              <div className="text-[11px] font-medium text-rust-700 uppercase tracking-wider mb-1.5">Cons</div>
+              <div className="text-[11px] font-medium text-rust-700 dark:text-rust-300 uppercase tracking-wider mb-1.5">Cons</div>
               <ul className="space-y-1">
                 {o.cons.map((p, i) => (
-                  <li key={i} className="flex items-start gap-1.5 text-xs text-ink-700 leading-relaxed">
+                  <li key={i} className="flex items-start gap-1.5 text-xs text-ink-700 dark:text-night-800 leading-relaxed">
                     <X size={11} className="mt-0.5 text-rust-600 flex-shrink-0" />
                     <span>{p}</span>
                   </li>
@@ -103,9 +103,9 @@ export default function RedisPlacementComparison() {
               </ul>
             </div>
 
-            <div className="pt-2 mt-2 border-t border-ink-100">
-              <div className="flex items-start gap-1.5 text-xs italic text-ink-600 leading-relaxed">
-                <AlertTriangle size={11} className="mt-0.5 text-ink-500 flex-shrink-0" />
+            <div className="pt-2 mt-2 border-t border-ink-100 dark:border-night-400">
+              <div className="flex items-start gap-1.5 text-xs italic text-ink-600 dark:text-night-700 leading-relaxed">
+                <AlertTriangle size={11} className="mt-0.5 text-ink-500 dark:text-night-700 flex-shrink-0" />
                 <span>{o.recommendation}</span>
               </div>
             </div>
