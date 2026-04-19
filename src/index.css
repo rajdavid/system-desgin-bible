@@ -12,10 +12,21 @@
   body {
     @apply bg-cream-50 text-ink-900 font-sans;
     font-feature-settings: 'ss01', 'cv11';
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .dark body {
+    background-color: #111113;
+    color: #E4E0D8;
   }
 
   ::selection {
     @apply bg-rust-100 text-rust-700;
+  }
+
+  .dark ::selection {
+    background: #3D2215;
+    color: #E8855A;
   }
 
   h1, h2, h3, h4 {
@@ -56,6 +67,28 @@
   .prose-custom a {
     @apply text-rust-600 underline underline-offset-2 hover:text-rust-700;
   }
+
+  .dark .prose-custom {
+    color: #A0A0B2;
+  }
+
+  .dark .prose-custom strong {
+    color: #E4E0D8;
+  }
+
+  .dark .prose-custom code {
+    background-color: #202023;
+    color: #E4E0D8;
+    border-color: #3A3A40;
+  }
+
+  .dark .prose-custom a {
+    color: #D4724A;
+  }
+
+  .dark .prose-custom a:hover {
+    color: #E8855A;
+  }
 }
 
 /* Custom scrollbar */
@@ -74,6 +107,16 @@
 
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-ink-300;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background-color: #3A3A40;
+  border-radius: 9999px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: #52525E;
+  border-radius: 9999px;
 }
 
 /* SVG animations */

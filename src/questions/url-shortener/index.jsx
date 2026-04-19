@@ -39,31 +39,31 @@ export default function UrlShortener() {
       {/* Back link */}
       <Link
         to="/"
-        className="inline-flex items-center gap-1.5 text-sm text-ink-500 hover:text-ink-900 mb-6"
+        className="inline-flex items-center gap-1.5 text-sm text-ink-500 dark:text-night-700 hover:text-ink-900 dark:hover:text-night-900 mb-6"
       >
         <ArrowLeft size={14} /> All questions
       </Link>
 
       {/* Header */}
-      <header className="pb-10 mb-4 border-b border-ink-200">
+      <header className="pb-10 mb-4 border-b border-ink-200 dark:border-night-400">
         <div className="flex items-center gap-2 mb-4">
           <span className="text-xs font-medium px-2 py-0.5 rounded border bg-teal-50 text-teal-700 border-teal-100">
             Easy
           </span>
-          <span className="text-xs font-medium px-2 py-0.5 rounded bg-cream-100 text-ink-700 border border-ink-200">
+          <span className="text-xs font-medium px-2 py-0.5 rounded bg-cream-100 dark:bg-night-300 text-ink-700 dark:text-night-800 border border-ink-200 dark:border-night-500">
             Very High frequency
           </span>
-          <span className="text-xs text-ink-500 ml-2">Google · Amazon · Meta · Uber</span>
+          <span className="text-xs text-ink-500 dark:text-night-700 ml-2">Google · Amazon · Meta · Uber</span>
         </div>
-        <h1 className="font-serif text-5xl font-medium text-ink-900 tracking-tight mb-3">
+        <h1 className="font-serif text-5xl font-medium text-ink-900 dark:text-night-900 tracking-tight mb-3">
           Design a URL Shortener
         </h1>
-        <p className="text-lg text-ink-600">TinyURL / Bit.ly</p>
+        <p className="text-lg text-ink-600 dark:text-night-700">TinyURL / Bit.ly</p>
       </header>
 
       {/* Table of contents */}
-      <aside className="bg-cream-100 border border-ink-200 rounded-lg p-5 mb-12">
-        <div className="text-xs font-medium text-ink-500 uppercase tracking-wider mb-3">
+      <aside className="bg-cream-100 dark:bg-night-200 border border-ink-200 dark:border-night-400 rounded-lg p-5 mb-12">
+        <div className="text-xs font-medium text-ink-500 dark:text-night-700 uppercase tracking-wider mb-3">
           On this page
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-x-3 gap-y-1.5">
@@ -71,9 +71,9 @@ export default function UrlShortener() {
             <a
               key={s.id}
               href={`#${s.id}`}
-              className="text-sm text-ink-700 hover:text-rust-600 transition"
+              className="text-sm text-ink-700 dark:text-night-800 hover:text-rust-600 dark:hover:text-[#D4724A] transition"
             >
-              <span className="text-ink-400 font-mono text-xs mr-1.5">{String(i + 1).padStart(2, '0')}</span>
+              <span className="text-ink-400 dark:text-night-600 font-mono text-xs mr-1.5">{String(i + 1).padStart(2, '0')}</span>
               {s.label}
             </a>
           ))}
@@ -645,16 +645,16 @@ counter = 3.5T   → "zzzzzzz"  // last 7-char key`}
         title="Realistic deployment picture"
         intro="Going from abstract boxes to concrete infrastructure. Useful when the interviewer asks 'how many servers would you run?'"
       >
-        <div className="bg-white border border-ink-200 rounded-xl overflow-hidden my-6 not-prose">
+        <div className="bg-white dark:bg-night-200 border border-ink-200 dark:border-night-400 rounded-xl overflow-hidden my-6 not-prose">
           <table className="w-full text-sm">
-            <thead className="bg-cream-100 border-b border-ink-200 text-left text-xs text-ink-500 uppercase tracking-wider">
+            <thead className="bg-cream-100 dark:bg-night-300 border-b border-ink-200 dark:border-night-400 text-left text-xs text-ink-500 dark:text-night-700 uppercase tracking-wider">
               <tr>
                 <th className="px-4 py-3 font-medium">Component</th>
                 <th className="px-4 py-3 font-medium">Count</th>
                 <th className="px-4 py-3 font-medium">Notes</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-ink-100">
+            <tbody className="divide-y divide-ink-100 dark:divide-night-400">
               <Row comp="Load balancer" count="Managed (ALB / NLB)" notes="Not a self-managed container" />
               <Row comp="App servers" count="10 base · 6–30 autoscale" notes="One container per instance" />
               <Row comp="KGS workers" count="3 across 3 AZs" notes="Overprovisioned for throughput; sized for availability" />
@@ -675,7 +675,7 @@ counter = 3.5T   → "zzzzzzz"  // last 7-char key`}
           </p>
         </Callout>
 
-        <p className="mt-6 text-ink-600 text-sm">
+        <p className="mt-6 text-ink-600 dark:text-night-700 text-sm">
           <strong>General rule:</strong> any service providing coordination or configuration (ZooKeeper, etcd, Consul,
           schema registries) should run off the request path as a small dedicated cluster. You want them highly available,
           but not in your p99 latency budget.
@@ -683,14 +683,14 @@ counter = 3.5T   → "zzzzzzz"  // last 7-char key`}
       </Section>
 
       {/* Footer nav */}
-      <div className="mt-16 pt-8 border-t border-ink-200 flex items-center justify-between">
+      <div className="mt-16 pt-8 border-t border-ink-200 dark:border-night-400 flex items-center justify-between">
         <Link
           to="/"
-          className="inline-flex items-center gap-1.5 text-sm text-ink-500 hover:text-ink-900"
+          className="inline-flex items-center gap-1.5 text-sm text-ink-500 dark:text-night-700 hover:text-ink-900 dark:hover:text-night-900"
         >
           <ArrowLeft size={14} /> All questions
         </Link>
-        <div className="text-sm text-ink-500">More questions coming soon</div>
+        <div className="text-sm text-ink-500 dark:text-night-700">More questions coming soon</div>
       </div>
     </div>
   );
@@ -698,10 +698,10 @@ counter = 3.5T   → "zzzzzzz"  // last 7-char key`}
 
 function Row({ comp, count, notes, warn }) {
   return (
-    <tr className={warn ? 'bg-rust-50/40' : ''}>
-      <td className="px-4 py-3 font-medium text-ink-900">{comp}</td>
-      <td className="px-4 py-3 font-mono text-xs text-ink-700">{count}</td>
-      <td className="px-4 py-3 text-ink-600 text-xs">{notes}</td>
+    <tr className={warn ? 'bg-rust-50/40 dark:bg-[#1F0E07]/40' : 'dark:bg-night-200'}>
+      <td className="px-4 py-3 font-medium text-ink-900 dark:text-night-900">{comp}</td>
+      <td className="px-4 py-3 font-mono text-xs text-ink-700 dark:text-night-800">{count}</td>
+      <td className="px-4 py-3 text-ink-600 dark:text-night-700 text-xs">{notes}</td>
     </tr>
   );
 }
