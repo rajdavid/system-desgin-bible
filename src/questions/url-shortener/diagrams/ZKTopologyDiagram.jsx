@@ -1,104 +1,321 @@
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import useDark from '../../../hooks/useDark';
+
+const DATA_PLANE = [
+  { id: 'client', label: 'Client', variant: 'neutral' },
+  { id: 'lb', label: 'LB', variant: 'teal' },
+  { id: 'app', label: 'App Servers', variant: 'teal' },
+  { id: 'redis', label: 'Redis', variant: 'teal' },
+  { id: 'db', label: 'DB', variant: 'teal' },
+];
+
+const ISOLATION_REASONS = [
+  'Consensus writes take 5–10ms',
+  'Different failure domain',
+  'Not routable from internet',
+  'Load: ~3 req/hour per worker',
+];
 
 export default function ZKTopologyDiagram() {
   const isDark = useDark();
+  const [activeDP, setActiveDP] = useState(-1);
+  const [showKGS, setShowKGS] = useState(false);
+  const [showZK, setShowZK] = useState(false);
 
-  const labelFill = isDark ? '#A0A0A0' : '#737373';
-  const textFill = isDark ? '#E4E0D8' : '#2A2A2A';
-  const subtextFill = isDark ? '#8A8A8C' : '#595959';
-  const arrowStroke = isDark ? '#6A6A6C' : '#9A9A9A';
-  const clientBg = isDark ? '#2C2C2E' : '#F5F1E9';
-  const clientBorder = isDark ? '#3A3A3C' : '#9A9A9A';
-  const tealBg = isDark ? '#071A12' : '#E5F3EE';
-  const tealBorder = isDark ? '#2D8B66' : '#2D8B66';
-  const tealText = isDark ? '#6EE7B7' : '#145038';
-  const accentBg = isDark ? '#1F0E07' : '#FAF0EC';
-  const accentBorder = isDark ? '#D4643A' : '#C4643A';
-  const accentText = isDark ? '#E8855A' : '#843E1C';
-  const rustLabel = isDark ? '#E8855A' : '#C4643A';
-  const greenLabel = isDark ? '#6EE7B7' : '#1F6D50';
-  const noteBg = isDark ? '#1C1C1E' : '#FBF9F5';
-  const noteBorder = isDark ? '#3A3A3C' : '#E5E3DE';
-  const dashLine = isDark ? '#D4643A' : '#C4643A';
+  // looping animation
+  useEffect(() => {
+    let step = 0;
+    const timer = setInterval(() => {
+      if (step <= 4) {
+        setActiveDP(step);
+        if (step === 2) setShowKGS(true);
+      }
+      if (step === 4) setShowZK(true);
+      if (step >= 6) {
+        step = -1;
+        setActiveDP(-1);
+        setShowKGS(false);
+        setShowZK(false);
+      }
+      step++;
+    }, 650);
+    return () => clearInterval(timer);
+  }, []);
 
   return (
-    <div className="bg-white dark:bg-night-200 rounded-xl border border-ink-200 dark:border-night-400 p-6 my-8 not-prose">
-      <div className="text-xs font-medium text-ink-500 dark:text-night-700 uppercase tracking-wider mb-4">
-        Where ZooKeeper sits — off the request path
+    <div className="bg-white dark:bg-night-200 rounded-xl border border-ink-200 dark:border-night-400 overflow-hidden my-8 not-prose">
+      {/* header */}
+      <div className="bg-cream-100 dark:bg-night-300 border-b border-ink-200 dark:border-night-400 px-6 py-4">
+        <div className="text-xs font-medium text-ink-500 dark:text-night-700 uppercase tracking-wider mb-1">
+          Animated — data plane vs control plane
+        </div>
+        <div className="font-serif text-lg font-medium text-ink-900 dark:text-night-900">
+          Where ZooKeeper sits — off the request path
+        </div>
       </div>
-      <svg viewBox="0 0 720 420" className="w-full h-auto">
-        <defs>
-          <marker id="arrGray" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto">
-            <path d="M2 1 L8 5 L2 9" fill="none" stroke={arrowStroke} strokeWidth="1.5" />
-          </marker>
-          <marker id="arrRed" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto">
-            <path d="M2 1 L8 5 L2 9" fill="none" stroke={rustLabel} strokeWidth="1.5" />
-          </marker>
-        </defs>
 
-        {/* Data plane label */}
-        <text x="20" y="24" fontSize="11" fill={greenLabel} fontWeight="600">DATA PLANE · every user request</text>
+      <div className="p-6">
+        {/* ── DATA PLANE ── */}
+        <div className="mb-2">
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-teal-600 dark:text-teal-400">
+            ⚡ Data plane · every user request
+          </span>
+        </div>
 
-        {/* Data plane row */}
-        <rect x="20" y="40" width="80" height="44" rx="6" fill={clientBg} stroke={clientBorder} />
-        <text x="60" y="66" textAnchor="middle" fontSize="13" fontWeight="500" fill={textFill}>Client</text>
+        <div className="flex items-center gap-0 overflow-x-auto pb-2 mb-1">
+          {DATA_PLANE.map((node, i) => (
+            <div key={node.id} className="flex items-center shrink-0">
+              {i > 0 && <HArrow active={activeDP >= i} isDark={isDark} />}
+              <FlowNode
+                label={node.label}
+                variant={node.variant}
+                active={activeDP >= i}
+                isDark={isDark}
+              />
+            </div>
+          ))}
+        </div>
 
-        <line x1="100" y1="62" x2="130" y2="62" stroke={arrowStroke} strokeWidth="1.5" markerEnd="url(#arrGray)" />
+        {/* ── writes also need shortKey ── */}
+        <div className="flex items-start gap-3 ml-[120px] sm:ml-[140px] mb-1">
+          <motion.span
+            animate={{ opacity: showKGS ? 1 : 0.3 }}
+            className="text-[11px] font-semibold text-rust-500 dark:text-rust-400 pt-0.5"
+          >
+            writes also need a shortKey
+          </motion.span>
+        </div>
 
-        <rect x="130" y="40" width="80" height="44" rx="6" fill={tealBg} stroke={tealBorder} />
-        <text x="170" y="66" textAnchor="middle" fontSize="13" fontWeight="500" fill={tealText}>LB</text>
+        {/* arrow down to KGS */}
+        <div className="flex justify-center mb-1 -ml-16 sm:ml-0" style={{ maxWidth: 340, margin: '0 auto' }}>
+          <VArrow active={showKGS} isDark={isDark} color="gray" />
+        </div>
 
-        <line x1="210" y1="62" x2="240" y2="62" stroke={arrowStroke} strokeWidth="1.5" markerEnd="url(#arrGray)" />
+        {/* ── KGS Workers ── */}
+        <div className="max-w-xs mx-auto mb-2">
+          <motion.div
+            animate={{ opacity: showKGS ? 1 : 0.35, scale: showKGS ? 1 : 0.97 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 22 }}
+            className="rounded-xl p-3.5 border-2 text-center border-teal-400 dark:border-teal-600 bg-teal-50 dark:bg-[#071A12]"
+            style={{
+              boxShadow: showKGS
+                ? isDark ? '0 0 14px rgba(45,139,102,0.2)' : '0 0 14px rgba(45,139,102,0.1)'
+                : 'none',
+            }}
+          >
+            <div className="text-sm font-semibold text-teal-700 dark:text-teal-300">KGS workers</div>
+            <div className="text-[11px] text-teal-600/70 dark:text-teal-400/50 mt-0.5">
+              serves keys from local range
+            </div>
+          </motion.div>
+        </div>
 
-        <rect x="240" y="40" width="120" height="44" rx="6" fill={tealBg} stroke={tealBorder} />
-        <text x="300" y="66" textAnchor="middle" fontSize="13" fontWeight="500" fill={tealText}>App Servers</text>
+        {/* ── dashed arrow + "once per ~17 min" ── */}
+        <div className="flex items-center justify-center gap-3 mb-1">
+          <VArrow active={showZK} isDark={isDark} color="rust" dashed />
+          <motion.span
+            animate={{ opacity: showZK ? 1 : 0.3 }}
+            className="text-[11px] italic text-rust-500 dark:text-rust-400"
+          >
+            once per ~17 min
+          </motion.span>
+        </div>
 
-        <line x1="360" y1="62" x2="390" y2="62" stroke={arrowStroke} strokeWidth="1.5" markerEnd="url(#arrGray)" />
+        {/* ── CONTROL PLANE divider ── */}
+        <div className="relative my-3">
+          <div className="border-t-2 border-dashed border-rust-300/40 dark:border-rust-600/30" />
+          <span className="absolute -top-2.5 left-0 bg-white dark:bg-night-200 pr-3 text-[11px] font-semibold uppercase tracking-wide text-rust-500 dark:text-rust-400">
+            🔒 Control plane · off-path, rare traffic
+          </span>
+        </div>
 
-        <rect x="390" y="40" width="80" height="44" rx="6" fill={tealBg} stroke={tealBorder} />
-        <text x="430" y="66" textAnchor="middle" fontSize="13" fontWeight="500" fill={tealText}>Redis</text>
+        {/* ── ZooKeeper + Annotation ── */}
+        <div className="flex flex-col md:flex-row items-start gap-3 mt-4">
+          {/* ZK cluster */}
+          <motion.div
+            animate={{
+              opacity: showZK ? 1 : 0.35,
+              scale: showZK ? 1 : 0.97,
+            }}
+            transition={{ type: 'spring', stiffness: 300, damping: 22 }}
+            className="relative rounded-xl px-6 py-4 border-2 text-center border-rust-400 dark:border-rust-500 shrink-0"
+            style={{
+              background: isDark
+                ? 'linear-gradient(135deg, #1F0E07 0%, #2A1510 100%)'
+                : 'linear-gradient(135deg, #FAF0EC 0%, #FFF5EF 100%)',
+              boxShadow: showZK
+                ? isDark ? '0 0 18px rgba(212,100,58,0.2)' : '0 0 18px rgba(196,100,58,0.12)'
+                : 'none',
+            }}
+          >
+            <div className="text-sm font-semibold text-rust-700 dark:text-rust-300">
+              ZooKeeper cluster
+            </div>
+            <div className="text-[11px] text-rust-600/80 dark:text-rust-400/70 mt-1">
+              3–5 nodes · separate subnet
+            </div>
+            <div className="text-[11px] text-rust-600/80 dark:text-rust-400/70">
+              no public exposure
+            </div>
+            <div className="text-[11px] italic text-rust-500/70 dark:text-rust-400/50 mt-0.5">
+              only KGS workers can reach it
+            </div>
 
-        <line x1="470" y1="62" x2="500" y2="62" stroke={arrowStroke} strokeWidth="1.5" markerEnd="url(#arrGray)" />
+            {/* pulsing ring */}
+            {showZK && (
+              <motion.div
+                className="absolute inset-0 rounded-xl border-2 border-rust-400/30 dark:border-rust-500/20"
+                animate={{ scale: [1, 1.03, 1], opacity: [0.5, 0, 0.5] }}
+                transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+              />
+            )}
+          </motion.div>
 
-        <rect x="500" y="40" width="80" height="44" rx="6" fill={tealBg} stroke={tealBorder} />
-        <text x="540" y="66" textAnchor="middle" fontSize="13" fontWeight="500" fill={tealText}>DB</text>
+          {/* isolation reasons */}
+          <motion.div
+            animate={{ opacity: showZK ? 1 : 0.35 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+            className="rounded-lg px-4 py-3 border border-ink-200 dark:border-night-400 bg-cream-50 dark:bg-night-300 shrink-0"
+          >
+            <div className="text-[11px] font-semibold text-ink-800 dark:text-night-900 mb-1.5">
+              Why it's isolated:
+            </div>
+            <ul className="space-y-1">
+              {ISOLATION_REASONS.map((reason, i) => (
+                <motion.li
+                  key={i}
+                  initial={{ opacity: 0, x: -6 }}
+                  animate={{ opacity: showZK ? 1 : 0.3, x: showZK ? 0 : -6 }}
+                  transition={{ delay: showZK ? 0.3 + i * 0.1 : 0 }}
+                  className="flex items-center gap-1.5 text-[11px] text-ink-600 dark:text-night-700 leading-tight"
+                >
+                  <span className="w-1 h-1 rounded-full bg-rust-400 dark:bg-rust-500 shrink-0" />
+                  {reason}
+                </motion.li>
+              ))}
+            </ul>
+          </motion.div>
+        </div>
 
-        {/* Transition to KGS */}
-        <text x="20" y="130" fontSize="11" fill={rustLabel} fontWeight="600">writes also need a shortKey</text>
-
-        <path d="M 300 84 L 300 150" stroke={arrowStroke} strokeWidth="1.5" markerEnd="url(#arrGray)" />
-
-        {/* KGS box */}
-        <rect x="220" y="150" width="160" height="54" rx="8" fill={tealBg} stroke={tealBorder} />
-        <text x="300" y="172" textAnchor="middle" fontSize="13" fontWeight="500" fill={tealText}>KGS workers</text>
-        <text x="300" y="190" textAnchor="middle" fontSize="11" fill={tealText} opacity="0.7">serves keys from local range</text>
-
-        {/* Dashed to ZK */}
-        <text x="400" y="240" fontSize="11" fill={rustLabel} fontStyle="italic">once per ~17 min</text>
-        <path d="M 300 204 L 300 280" stroke={rustLabel} strokeWidth="1.5" strokeDasharray="4 3" markerEnd="url(#arrRed)" />
-
-        {/* Control plane label */}
-        <text x="20" y="268" fontSize="11" fill={rustLabel} fontWeight="600">CONTROL PLANE · off-path, rare traffic</text>
-
-        <line x1="20" y1="252" x2="700" y2="252" stroke={dashLine} strokeDasharray="2 3" opacity="0.4" />
-
-        {/* ZooKeeper cluster */}
-        <rect x="180" y="280" width="240" height="90" rx="10" fill={accentBg} stroke={accentBorder} strokeWidth="1.5" />
-        <text x="300" y="308" textAnchor="middle" fontSize="14" fontWeight="600" fill={accentText}>ZooKeeper cluster</text>
-        <text x="300" y="328" textAnchor="middle" fontSize="11" fill={accentText}>3–5 nodes · separate subnet</text>
-        <text x="300" y="344" textAnchor="middle" fontSize="11" fill={accentText}>no public exposure</text>
-        <text x="300" y="362" textAnchor="middle" fontSize="11" fill={accentText} fontStyle="italic" opacity="0.8">only KGS workers can reach it</text>
-
-        {/* Right side: annotation */}
-        <g transform="translate(450, 280)">
-          <rect width="250" height="90" rx="6" fill={noteBg} stroke={noteBorder} />
-          <text x="12" y="22" fontSize="11" fontWeight="600" fill={textFill}>Why it's isolated:</text>
-          <text x="12" y="40" fontSize="10" fill={subtextFill}>• Consensus writes take 5–10ms</text>
-          <text x="12" y="54" fontSize="10" fill={subtextFill}>• Different failure domain</text>
-          <text x="12" y="68" fontSize="10" fill={subtextFill}>• Not routable from internet</text>
-          <text x="12" y="82" fontSize="10" fill={subtextFill}>• Load: ~3 req/hour per worker</text>
-        </g>
-      </svg>
+        {/* ── step indicator ── */}
+        <div className="flex items-center gap-1.5 mt-5">
+          <span className="text-[10px] text-ink-400 dark:text-night-600 mr-1">data:</span>
+          {DATA_PLANE.map((_, i) => (
+            <motion.div
+              key={i}
+              className="h-1.5 rounded-full flex-1 max-w-6"
+              animate={{
+                backgroundColor: activeDP >= i
+                  ? (isDark ? '#2D8B66' : '#2D8B66')
+                  : (isDark ? '#2A2A2C' : '#E5E3DE'),
+              }}
+              transition={{ duration: 0.2 }}
+            />
+          ))}
+          <span className="text-[10px] text-ink-300 dark:text-night-500 mx-1">|</span>
+          <span className="text-[10px] text-ink-400 dark:text-night-600 mr-1">ctrl:</span>
+          <motion.div
+            className="h-1.5 rounded-full flex-1 max-w-6"
+            animate={{
+              backgroundColor: showKGS
+                ? (isDark ? '#2D8B66' : '#2D8B66')
+                : (isDark ? '#2A2A2C' : '#E5E3DE'),
+            }}
+            transition={{ duration: 0.2 }}
+          />
+          <motion.div
+            className="h-1.5 rounded-full flex-1 max-w-6"
+            animate={{
+              backgroundColor: showZK
+                ? (isDark ? '#D4643A' : '#C4643A')
+                : (isDark ? '#2A2A2C' : '#E5E3DE'),
+            }}
+            transition={{ duration: 0.2 }}
+          />
+        </div>
+      </div>
     </div>
+  );
+}
+
+/* ── flow node ── */
+function FlowNode({ label, variant, active, isDark }) {
+  const isTeal = variant === 'teal';
+  return (
+    <motion.div
+      animate={{ scale: active ? 1.03 : 1, opacity: active ? 1 : 0.4 }}
+      transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+      className={`relative rounded-lg px-4 py-2.5 text-center border-2 transition-colors duration-300 ${
+        isTeal
+          ? 'bg-teal-50 dark:bg-[#071A12] border-teal-400 dark:border-teal-600'
+          : 'bg-cream-100 dark:bg-night-300 border-ink-300 dark:border-night-500'
+      }`}
+      style={{
+        boxShadow: active && isTeal
+          ? isDark ? '0 0 12px rgba(45,139,102,0.2)' : '0 0 12px rgba(45,139,102,0.1)'
+          : 'none',
+        minWidth: label.length > 6 ? 110 : 70,
+      }}
+    >
+      <div className={`text-sm font-semibold ${
+        isTeal ? 'text-teal-700 dark:text-teal-300' : 'text-ink-800 dark:text-night-800'
+      }`}>
+        {label}
+      </div>
+      {active && (
+        <motion.div
+          className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-teal-500"
+          animate={{ scale: [1, 1.5, 1], opacity: [1, 0.5, 1] }}
+          transition={{ duration: 1, repeat: Infinity }}
+        />
+      )}
+    </motion.div>
+  );
+}
+
+/* ── horizontal arrow ── */
+function HArrow({ active, isDark }) {
+  return (
+    <motion.div animate={{ opacity: active ? 1 : 0.2 }} className="flex items-center px-0.5">
+      <svg width="24" height="12" viewBox="0 0 24 12" className="shrink-0">
+        <line x1="0" y1="6" x2="18" y2="6" stroke={isDark ? '#4A4A4C' : '#B0B0B0'} strokeWidth="1.5" />
+        <path d="M14 2 L20 6 L14 10" fill="none" stroke={isDark ? '#4A4A4C' : '#B0B0B0'} strokeWidth="1.5" strokeLinecap="round" />
+        {active && (
+          <circle r="2.5" fill={isDark ? '#6EE7B7' : '#2D8B66'}>
+            <animateMotion dur="0.5s" repeatCount="indefinite" path="M0,6 L20,6" />
+          </circle>
+        )}
+      </svg>
+    </motion.div>
+  );
+}
+
+/* ── vertical arrow ── */
+function VArrow({ active, isDark, color = 'gray', dashed }) {
+  const strokeColor = color === 'rust'
+    ? (isDark ? '#E8855A' : '#C4643A')
+    : (isDark ? '#4A4A4C' : '#B0B0B0');
+  const dotColor = color === 'rust'
+    ? (isDark ? '#E8855A' : '#C4643A')
+    : (isDark ? '#6EE7B7' : '#2D8B66');
+
+  return (
+    <motion.div animate={{ opacity: active ? 1 : 0.2 }} className="flex justify-center py-0.5">
+      <svg width="12" height="24" viewBox="0 0 12 24" className="shrink-0">
+        <line
+          x1="6" y1="0" x2="6" y2="18"
+          stroke={strokeColor}
+          strokeWidth="1.5"
+          strokeDasharray={dashed ? '4 3' : undefined}
+        />
+        <path d="M2 14 L6 20 L10 14" fill="none" stroke={strokeColor} strokeWidth="1.5" strokeLinecap="round" />
+        {active && (
+          <circle r="2.5" fill={dotColor}>
+            <animateMotion dur="0.5s" repeatCount="indefinite" path="M6,0 L6,20" />
+          </circle>
+        )}
+      </svg>
+    </motion.div>
   );
 }
