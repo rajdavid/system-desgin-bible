@@ -1,0 +1,98 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-cream-50 text-ink-900 font-sans;
+    font-feature-settings: 'ss01', 'cv11';
+  }
+
+  ::selection {
+    @apply bg-rust-100 text-rust-700;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-serif tracking-tight;
+  }
+}
+
+@layer components {
+  .prose-custom {
+    @apply text-ink-800 leading-relaxed;
+  }
+
+  .prose-custom p {
+    @apply my-4 text-[17px] leading-[1.75];
+  }
+
+  .prose-custom strong {
+    @apply font-semibold text-ink-900;
+  }
+
+  .prose-custom code {
+    @apply font-mono text-[0.9em] bg-cream-100 text-ink-900 px-1.5 py-0.5 rounded border border-ink-200;
+  }
+
+  .prose-custom ul {
+    @apply my-4 space-y-2;
+  }
+
+  .prose-custom ul li {
+    @apply pl-6 relative text-[17px] leading-[1.7];
+  }
+
+  .prose-custom ul li::before {
+    content: '';
+    @apply absolute left-1 top-[0.75em] w-2 h-2 rounded-full bg-rust-500;
+  }
+
+  .prose-custom a {
+    @apply text-rust-600 underline underline-offset-2 hover:text-rust-700;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-ink-200 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-ink-300;
+}
+
+/* SVG animations */
+.animated-arrow {
+  stroke-dasharray: 6 4;
+  animation: flow 1.5s linear infinite;
+}
+
+@keyframes flow {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
+.pulse-glow {
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
