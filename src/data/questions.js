@@ -106,7 +106,8 @@ export const questions = [
   },
   {
     "number": 2,
-    "slug": "design-a-chat-system-whatsapp-messenger",
+    "slug": "chat-system",
+    "status": "available",
     "title": "Design a Chat System (WhatsApp / Messenger)",
     "difficulty": "Medium",
     "frequency": "Very High",
@@ -195,8 +196,7 @@ export const questions = [
       }
     ],
     "bucket": 1,
-    "tier": null,
-    "status": "coming-soon"
+    "tier": 1
   },
   {
     "number": 3,
