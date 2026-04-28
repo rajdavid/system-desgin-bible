@@ -1,11 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
-import { motion, useScroll, useSpring } from 'framer-motion';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
 import Section from '../../components/ui/Section';
 import Callout from '../../components/ui/Callout';
 import Code from '../../components/ui/Code';
 import Stat from '../../components/ui/Stat';
+import DeepDiveLayout from '../../components/DeepDiveLayout';
 import ChatArchitectureDiagram from './diagrams/ArchitectureDiagram';
 import WebSocketHandshake from './diagrams/WebSocketHandshake';
 import MessageRoutingViz from './diagrams/MessageRoutingViz';
@@ -16,149 +13,48 @@ import PresenceHeartbeat from './diagrams/PresenceHeartbeat';
 import KafkaTopicExplorer from './diagrams/KafkaTopicExplorer';
 
 const SECTIONS = [
-  { id: 'requirements',   label: 'Requirements' },
-  { id: 'architecture',   label: 'Architecture' },
-  { id: 'websockets',     label: 'WebSockets' },
-  { id: 'connection-mgr', label: 'Connection manager' },
-  { id: 'message-flow',   label: 'Message flow' },
-  { id: 'kafka',          label: 'Kafka design' },
-  { id: 'cassandra',      label: 'Cassandra schema' },
-  { id: 'group-chats',    label: 'Group chats' },
-  { id: 'presence',       label: 'Presence & heartbeat' },
-  { id: 'offline',        label: 'Offline delivery' },
-  { id: 'e2e',            label: 'E2E Encryption' },
-  { id: 'failure',        label: 'Failure modes' },
-  { id: 'tradeoffs',      label: 'Tradeoffs' },
-  { id: 'deployment',     label: 'Deployment' },
+  { id: 'requirements',     label: 'Requirements',          phase: 'Foundations' },
+  { id: 'architecture',     label: 'Architecture',          phase: 'Foundations' },
+  { id: 'websockets',       label: 'WebSockets',            phase: 'Hot path' },
+  { id: 'connection-mgr',   label: 'Connection manager',    phase: 'Hot path' },
+  { id: 'message-flow',     label: 'Message flow',          phase: 'Hot path' },
+  { id: 'kafka',            label: 'Kafka design',          phase: 'Hot path' },
+  { id: 'cassandra',        label: 'Cassandra schema',      phase: 'Hot path' },
+  { id: 'group-chats',      label: 'Group chats',           phase: 'Features' },
+  { id: 'presence',         label: 'Presence & heartbeat',  phase: 'Features' },
+  { id: 'typing-receipts',  label: 'Typing & receipts',     phase: 'Features' },
+  { id: 'offline',          label: 'Offline delivery',      phase: 'Features' },
+  { id: 'media',            label: 'Media pipeline',        phase: 'Features' },
+  { id: 'e2e',              label: 'E2E Encryption',        phase: 'Features' },
+  { id: 'multi-device',     label: 'Multi-device sync',     phase: 'Features' },
+  { id: 'failure',          label: 'Failure modes',         phase: 'Production' },
+  { id: 'rate-limit',       label: 'Rate limiting & abuse', phase: 'Production' },
+  { id: 'multi-region',     label: 'Multi-region',          phase: 'Production' },
+  { id: 'scale-10x',        label: '10× scale follow-up',   phase: 'Production' },
+  { id: 'tradeoffs',        label: 'Tradeoffs',             phase: 'Production' },
+  { id: 'deployment',       label: 'Deployment',            phase: 'Production' },
 ];
 
-function useActiveSection(sectionIds) {
-  const [active, setActive] = useState(sectionIds[0]);
-  useEffect(() => {
-    const observers = [];
-    const visible = new Map();
-    sectionIds.forEach((id) => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      const obs = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) visible.set(id, entry.intersectionRatio);
-          else visible.delete(id);
-          for (const sid of sectionIds) {
-            if (visible.has(sid)) { setActive(sid); break; }
-          }
-        },
-        { rootMargin: '-80px 0px -60% 0px', threshold: [0, 0.25] }
-      );
-      obs.observe(el);
-      observers.push(obs);
-    });
-    return () => observers.forEach((o) => o.disconnect());
-  }, [sectionIds]);
-  return active;
-}
+const PHASES = ['Foundations', 'Hot path', 'Features', 'Production'];
 
 export default function ChatSystem() {
-  const contentRef = useRef(null);
-  const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, { stiffness: 120, damping: 30 });
-  const activeSection = useActiveSection(SECTIONS.map((s) => s.id));
-
-  useEffect(() => {
-    document.title = 'Design a Chat System — System Design Bible';
-  }, []);
-
   return (
-    <div className="gradient-mesh min-h-screen">
-      {/* Reading progress bar */}
-      <motion.div
-        className="fixed top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-blue-500 via-purple-500 to-teal-400 origin-left z-50"
-        style={{ scaleX }}
-      />
-
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Back link */}
-        <motion.div
-          initial={{ opacity: 0, x: -10 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          <Link
-            to="/"
-            className="inline-flex items-center gap-1.5 text-sm text-ink-500 dark:text-night-700 hover:text-ink-900 dark:hover:text-night-900 mb-6 group"
-          >
-            <ArrowLeft size={14} className="group-hover:-translate-x-0.5 transition-transform" />
-            All questions
-          </Link>
-        </motion.div>
-
-        {/* Header */}
-        <motion.header
-          className="pb-10 mb-4 border-b border-ink-200/60 dark:border-night-400/40"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-        >
-          <div className="flex items-center gap-2 mb-4">
-            <span className="text-xs font-medium px-2.5 py-1 rounded-lg glass-pill border-amber-200/60 dark:border-amber-500/30 text-amber-700 dark:text-amber-300">
-              Medium
-            </span>
-            <span className="text-xs font-medium px-2.5 py-1 rounded-lg glass-pill text-ink-700 dark:text-night-800">
-              Very High frequency
-            </span>
-            <span className="text-xs text-ink-400 dark:text-night-600 ml-2 font-medium">
-              Meta · Google · Amazon · Startups
-            </span>
-          </div>
-          <h1 className="font-serif text-4xl sm:text-5xl font-medium text-ink-900 dark:text-night-900 tracking-tight mb-3">
-            Design a Chat System
-          </h1>
-          <p className="text-lg text-ink-500 dark:text-night-700">WhatsApp / Messenger / iMessage</p>
-          <div className="flex flex-wrap gap-2 mt-4">
-            {['WebSockets', 'Kafka', 'Cassandra', 'Redis Pub/Sub', 'Presence', 'E2E Encryption', 'Fan-out'].map((tag) => (
-              <span key={tag} className="text-[11px] px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 font-medium">
-                {tag}
-              </span>
-            ))}
-          </div>
-        </motion.header>
-
-        {/* Main layout */}
-        <div className="lg:grid lg:grid-cols-[220px_1fr] lg:gap-10 mt-8">
-          {/* Sticky sidebar TOC */}
-          <aside className="hidden lg:block">
-            <nav className="sticky top-20">
-              <div className="text-[10px] font-semibold text-ink-400 dark:text-night-600 uppercase tracking-widest mb-4">
-                On this page
-              </div>
-              <ul className="space-y-0.5 border-l border-ink-200/50 dark:border-night-400/30">
-                {SECTIONS.map((s, i) => {
-                  const isActive = activeSection === s.id;
-                  return (
-                    <li key={s.id}>
-                      <a
-                        href={`#${s.id}`}
-                        className={`flex items-center gap-2 pl-4 py-1.5 text-sm transition-all border-l-2 -ml-[1px] ${
-                          isActive
-                            ? 'border-blue-500 dark:border-blue-400 text-blue-600 dark:text-blue-300 font-medium'
-                            : 'border-transparent text-ink-500 dark:text-night-700 hover:text-ink-800 dark:hover:text-night-800 hover:border-ink-300 dark:hover:border-night-500'
-                        }`}
-                      >
-                        <span className="font-mono text-[10px] tabular-nums opacity-60">{String(i + 1).padStart(2, '0')}</span>
-                        {s.label}
-                      </a>
-                    </li>
-                  );
-                })}
-              </ul>
-            </nav>
-          </aside>
-
-          {/* Mobile TOC */}
-          <MobileTOC sections={SECTIONS} active={activeSection} />
-
-          {/* Content area */}
-          <div ref={contentRef} className="min-w-0">
+    <DeepDiveLayout
+      documentTitle="Design a Chat System — System Design Bible"
+      theme="blue"
+      sections={SECTIONS}
+      phases={PHASES}
+      header={{
+        difficulty: 'Medium',
+        frequency: 'Very High',
+        companies: 'Meta · Google · Amazon · Startups',
+        title: 'Design a Chat System',
+        subtitle: 'WhatsApp / Messenger / iMessage',
+        tags: ['WebSockets', 'Kafka', 'Cassandra', 'Redis Pub/Sub', 'Presence', 'E2E Encryption', 'Fan-out'],
+      }}
+      prev={{ to: '/q/url-shortener', label: 'Q1 — URL Shortener' }}
+      next={{ to: '/q/news-feed', label: 'Q3 — News Feed' }}
+    >
 
             {/* ── 1. REQUIREMENTS ── */}
             <Section
@@ -262,6 +158,57 @@ export default function ChatSystem() {
               <Callout variant="insight" title="Why WhatsApp ran 2M connections per box">
                 At 100KB/conn Java would need 200GB per server for 2M conns — impossible. The BEAM (Erlang VM) uses green threads (processes) costing <strong>~2–4KB each</strong>, not OS threads. Combined with <Code inline>epoll</Code> for async I/O, each Erlang process blocks cheaply. WhatsApp ran FreeBSD + Erlang and hit 2M concurrent WebSocket connections per physical machine. Go goroutines get close (~8–64KB stack, growable). JVM threads at ~512KB each cannot compete here.
               </Callout>
+
+              <h3 className="text-xl font-serif font-medium text-ink-900 dark:text-night-900 mt-8 mb-3">So why size for 80K, not 2M?</h3>
+              <p>
+                The 2M/box number is a record, not a target. Most teams pick a much lower density on purpose:
+              </p>
+              <ul>
+                <li><strong>Blast radius.</strong> A 2M-conn box that crashes forces 2M clients to reconnect at once — a reconnect storm that can topple the cluster (the surviving boxes get 2M new TCP handshakes plus 2M Redis writes to the Connection Manager). At 80K, the storm is 25× smaller and trivially absorbable.</li>
+                <li><strong>Operational headroom.</strong> Rolling deploys, autoscaling decisions, and node draining are all bounded by how many connections need to migrate per machine. 80K drains in under a minute; 2M takes 20+.</li>
+                <li><strong>Runtime reality.</strong> 2M required Erlang's ~2KB-per-process model. Most companies have Go (~16KB stack growable) or Java/Kotlin (per-thread cost is far worse) services. 80K matches what those runtimes can hold without tuning the kernel for a million open file descriptors.</li>
+                <li><strong>NIC and CPU caps.</strong> 2M idle conns is fine, but if 1% become active in the same second, you have 20K msgs/s on one box — pushing a single NIC and one process's event loop. 80K caps the worst-case burst at 800 msgs/s.</li>
+              </ul>
+              <p>
+                <strong>The tradeoff to articulate:</strong> connection density is a knob between hardware cost (fewer, bigger boxes) and operational risk (smaller blast radius). 80K is a reasonable middle for non-Erlang stacks; the WhatsApp 2M figure is what's possible when you control the entire runtime.
+              </p>
+
+              <h3 className="text-xl font-serif font-medium text-ink-900 dark:text-night-900 mt-8 mb-3">Push transport comparison</h3>
+              <div className="bg-white dark:bg-night-200 rounded-xl border border-ink-200 dark:border-night-400 overflow-x-auto my-4 not-prose">
+                <table className="w-full text-sm">
+                  <thead className="bg-cream-100 dark:bg-night-300 text-left text-xs text-ink-500 dark:text-night-600 uppercase tracking-wider border-b border-ink-200 dark:border-night-400">
+                    <tr>
+                      <th className="px-3 py-3 font-medium">Transport</th>
+                      <th className="px-3 py-3 font-medium">Direction</th>
+                      <th className="px-3 py-3 font-medium">Latency</th>
+                      <th className="px-3 py-3 font-medium">Server cost / conn</th>
+                      <th className="px-3 py-3 font-medium">Mobile battery</th>
+                      <th className="px-3 py-3 font-medium">Verdict</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-ink-100 dark:divide-night-400 text-xs">
+                    {[
+                      ['Long polling',     '⇄ via re-poll',   '~RTT × 2',         'High (many short conns)', 'Bad (frequent radio wake)', '❌'],
+                      ['HTTP/2 streaming', '⇄ but framed',    '~RTT',             'Med (multiplexed)',       'OK',                          '⚠'],
+                      ['SSE',              '→ server only',   '~RTT',             'Med',                     'OK (one TCP)',                '⚠'],
+                      ['WebSocket',        '⇄ full duplex',   '~RTT (one frame)', 'Low (~25–100KB idle)',    'Good (1 conn + pings)',       '✓'],
+                      ['MQTT (over TCP)',  '⇄ with QoS',      '~RTT',             'Lowest (~2KB header)',    'Best (designed for mobile)',  '✓ (IoT-leaning)'],
+                    ].map(([transport, dir, lat, cost, batt, verdict]) => (
+                      <tr key={transport} className="dark:bg-night-200">
+                        <td className="px-3 py-2.5 font-medium text-ink-900 dark:text-night-900">{transport}</td>
+                        <td className="px-3 py-2.5 text-ink-700 dark:text-night-700">{dir}</td>
+                        <td className="px-3 py-2.5 text-ink-700 dark:text-night-700 font-mono">{lat}</td>
+                        <td className="px-3 py-2.5 text-ink-700 dark:text-night-700">{cost}</td>
+                        <td className="px-3 py-2.5 text-ink-700 dark:text-night-700">{batt}</td>
+                        <td className="px-3 py-2.5 text-ink-700 dark:text-night-700">{verdict}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-xs text-ink-500 dark:text-night-600 -mt-2">
+                MQTT note: WhatsApp historically used a custom protocol that resembles MQTT. For interview purposes, "WebSocket with binary framing" is the canonical answer; mention MQTT as the mobile-optimized alternative when battery is a hard constraint.
+              </p>
 
               <h3 className="text-xl font-serif font-medium text-ink-900 dark:text-night-900 mt-8 mb-3">WebSocket frame anatomy</h3>
               <p>
@@ -421,7 +368,13 @@ isolation.level               = read_committed`}
 
               <Callout variant="warning" title="acks=all is mandatory — do not compromise">
                 <p className="m-0">
-                  Setting <Code inline>acks=1</Code> (leader only) saves ~2ms per write, but the message can be lost if the leader crashes before replicating. For chat, a lost message is a permanent — a user sent it, got a single tick, then it vanished. Set <Code inline>acks=all</Code> and <Code inline>min.insync.replicas=2</Code>. The extra latency is invisible to humans.
+                  Setting <Code inline>acks=1</Code> (leader only) saves ~2ms per write, but the message can be lost if the leader crashes before replicating. For chat, a lost message is permanent — a user sent it, got a single tick, then it vanished. Set <Code inline>acks=all</Code> and <Code inline>min.insync.replicas=2</Code>. The extra latency is invisible to humans.
+                </p>
+              </Callout>
+
+              <Callout variant="info" title="Modern Kafka: idempotence is default-on">
+                <p className="m-0">
+                  On Kafka 3.0+ <Code inline>enable.idempotence=true</Code> is the default, and turning it on <em>forces</em> <Code inline>acks=all</Code>, <Code inline>retries=Integer.MAX_VALUE</Code>, and <Code inline>max.in.flight.requests.per.connection ≤ 5</Code>. Listing all four settings as separate knobs is outdated — in an interview, say "I'd leave idempotence on, which gives me acks=all and bounded in-flight automatically." It earns more points than reciting the legacy config.
                 </p>
               </Callout>
             </Section>
@@ -441,6 +394,26 @@ isolation.level               = read_committed`}
               </p>
 
               <CassandraSchemaViz />
+
+              <h3 className="text-xl font-serif font-medium text-ink-900 dark:text-night-900 mt-8 mb-3">Back-of-the-envelope storage</h3>
+              <p>
+                Always size before you draw. Quick math for 2M msgs/sec at ~500 bytes per message (envelope + ciphertext + metadata):
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 my-4 not-prose">
+                <Stat value="500B"  label="Per message" sub="ciphertext + envelope" />
+                <Stat value="86GB"  label="Per day raw"  sub="2M × 500B × 86,400s" accent />
+                <Stat value="2.6PB" label="Per month raw" sub="before replication" />
+                <Stat value="7.7PB" label="With RF=3"     sub="three replicas" accent />
+              </div>
+              <p>
+                7.7PB/month is too big to keep hot. The standard pattern: <strong>tier by age</strong>. Last 90 days on NVMe-backed Cassandra (~23PB), older messages compacted into cheaper object storage (S3/GCS) with a pointer table. For a 12-node cluster at RF=3 you want ~4TB NVMe per node × 12 nodes = 48TB hot — sized for ~6 months of working set after LZ4 compression (~2.5×) and tombstone collection.
+              </p>
+
+              <Callout variant="warning" title="Don't forget the per-user inbox/state">
+                <p className="m-0">
+                  The <Code inline>messages_by_chat</Code> table is the bulk of storage, but you also need <Code inline>chat_membership</Code> (user → chat list), <Code inline>read_state</Code> (last-read marker per chat per user), and <Code inline>device_registry</Code> (for multi-device). These are small per row but high cardinality — on the order of 50M users × 100 chats × 8 devices. Plan for ~5% of message storage as state tables, and put them on a different keyspace so compaction doesn't fight with the message firehose.
+                </p>
+              </Callout>
 
               <h3 className="text-xl font-serif font-medium text-ink-900 dark:text-night-900 mt-8 mb-3">Why <Code inline>(chat_id, bucket)</Code> and not just <Code inline>chat_id</Code>?</h3>
               <p>
@@ -558,10 +531,63 @@ isolation.level               = read_committed`}
               </Callout>
             </Section>
 
-            {/* ── 10. OFFLINE DELIVERY ── */}
+            {/* ── 10. TYPING & RECEIPTS ── */}
+            <Section
+              id="typing-receipts"
+              number={10}
+              eyebrow="Ephemeral signals"
+              title="Typing indicators & read receipts — the lossy lane"
+              intro="Not every signal deserves Kafka. Typing indicators expire in 3 seconds; if one drops no human notices. Treating them like messages would 4× your write load for zero durability gain."
+            >
+              <p>
+                Chat carries two fundamentally different kinds of traffic on the same WebSocket:
+              </p>
+              <ul>
+                <li><strong>Durable messages</strong> — must persist, must reach the recipient, must be ordered. Goes through Kafka → Cassandra.</li>
+                <li><strong>Ephemeral signals</strong> — typing indicators, read receipts, presence pings. Lossy is fine. <strong>Skip Kafka entirely.</strong> Send via Redis pub/sub and accept that a dropped signal vanishes forever.</li>
+              </ul>
+
+              <h3 className="text-xl font-serif font-medium text-ink-900 dark:text-night-900 mt-6 mb-3">Typing indicator flow</h3>
+              <Code lang="Typing indicator path">
+{`# User A starts typing:
+client → WS → Chat Server A
+  Chat Server A: lookup B's serverId from Connection Manager (5s cache)
+  Chat Server A → Redis PUBLISH inbox:server:B
+                  { type: "typing", chatId, userId, expires: now+5s }
+  Chat Server B → SUBSCRIBE callback → push WS frame to User B
+# Total: 1 Redis lookup + 1 pub/sub fanout. No Kafka. No Cassandra. ~2ms.
+
+# Client throttling:
+- Send "typing_start" once when first character entered
+- Re-send every 3s while still typing (keep-alive)
+- Send "typing_stop" on send or after 5s idle
+- Server-side debounce: drop typing_start within 2s window per (chatId, userId)`}
+              </Code>
+
+              <h3 className="text-xl font-serif font-medium text-ink-900 dark:text-night-900 mt-8 mb-3">Read receipts — durable, but lazy</h3>
+              <p>
+                Read receipts ("blue ticks") are different. They <em>are</em> durable (you don't want to keep showing "delivered" forever), but they don't need the message hot path. Two-stage write:
+              </p>
+              <ol>
+                <li>Client sends a <Code inline>read_ack</Code> WS frame for the latest <Code inline>messageId</Code> read in a chat.</li>
+                <li>Chat Server fans out via Redis pub/sub to the sender's server (live ✓✓ → 🔵✓✓ tick update).</li>
+                <li>Chat Server enqueues a single batched UPDATE to <Code inline>read_state</Code> — one row per <Code inline>(userId, chatId)</Code> with <Code inline>last_read_message_id</Code> — debounced server-side at 1s.</li>
+              </ol>
+              <p>
+                The trick: store one row per chat, not one per message. Reading 50 messages in a row updates a single row 50 times (or once if debounced) — not 50 inserts. This is the difference between scaling to 50M users and DDOSing your own database.
+              </p>
+
+              <Callout variant="insight" title="Typing indicators are the canary for your design">
+                <p className="m-0">
+                  In an interview, if a candidate routes typing indicators through Kafka + Cassandra, they're flunking the lossy/durable distinction. Push back: <em>"What happens at 2M msgs/sec when each typing event is also a message?"</em> The candidate either reaches for Redis pub/sub or doubles the infra. Typing is a great forcing function for separating the two lanes.
+                </p>
+              </Callout>
+            </Section>
+
+            {/* ── 11. OFFLINE DELIVERY ── */}
             <Section
               id="offline"
-              number={10}
+              number={11}
               eyebrow="The offline case"
               title="Offline delivery — push notifications & message queue"
               intro="At any given moment, most users are offline. The system must reliably deliver their messages when they reconnect, and notify them now via APNS/FCM."
@@ -615,10 +641,82 @@ isolation.level               = read_committed`}
               </Callout>
             </Section>
 
-            {/* ── 11. E2E ENCRYPTION ── */}
+            {/* ── 12. MEDIA PIPELINE ── */}
+            <Section
+              id="media"
+              number={12}
+              eyebrow="Out-of-band path"
+              title="Media pipeline — keep blobs out of the message bus"
+              intro="Photos and videos can be 50MB. Pushing them through Kafka and Cassandra would shred the message pipeline. The right answer is upload-then-reference."
+            >
+              <p>
+                The message pipeline is sized for ~500-byte messages. A 50MB video is 100,000× larger. Two design rules:
+              </p>
+              <ol>
+                <li><strong>Media never travels through Kafka or Cassandra.</strong> Only the <em>reference</em> (URL + content hash + dimensions + thumbnail) does.</li>
+                <li><strong>Clients upload directly to object storage</strong> via presigned URLs. Chat servers don't proxy bytes.</li>
+              </ol>
+
+              <h3 className="text-xl font-serif font-medium text-ink-900 dark:text-night-900 mt-6 mb-3">Upload flow (sender)</h3>
+              <Code lang="Media upload path">
+{`1. Client → Chat Server: POST /media/upload { sha256, size, mime, chatId }
+2. Chat Server → S3: GeneratePresignedURL(PUT, key=media/{uuid}, expires=15min)
+3. Chat Server → Client: { uploadUrl, mediaId, getUrl }
+4. Client → S3 directly via multipart upload
+   - encrypted client-side first (E2E session key derived per chat)
+   - S3 only ever stores ciphertext
+5. Client → Chat Server: WS msg { type: "media", mediaId, thumbnail }
+   - thumbnail is a 5KB blurred placeholder, embedded in the message itself
+6. Recipient receives the message, downloads from CDN URL on demand`}
+              </Code>
+
+              <h3 className="text-xl font-serif font-medium text-ink-900 dark:text-night-900 mt-8 mb-3">Why presigned URLs, not "upload through chat server"</h3>
+              <ul>
+                <li><strong>Bandwidth.</strong> A chat server holds 80K WS connections — proxying even 1% of users uploading a 5MB photo simultaneously is 4GB/s through one box. Presigned URLs offload to S3, which is built for this.</li>
+                <li><strong>Resumable uploads.</strong> S3 multipart upload survives network drops. Reimplementing on chat servers is busywork.</li>
+                <li><strong>Cost.</strong> S3 → CloudFront egress to recipients is cheaper than chat-server egress, and CDN caching dedupes the same blob to multiple recipients.</li>
+              </ul>
+
+              <h3 className="text-xl font-serif font-medium text-ink-900 dark:text-night-900 mt-8 mb-3">Storage tiers & lifecycle</h3>
+              <div className="bg-white dark:bg-night-200 border border-ink-200 dark:border-night-400 rounded-xl overflow-hidden my-4 not-prose">
+                <table className="w-full text-sm">
+                  <thead className="bg-cream-100 dark:bg-night-300 text-left text-xs text-ink-500 dark:text-night-600 uppercase tracking-wider border-b border-ink-200 dark:border-night-400">
+                    <tr>
+                      <th className="px-4 py-3 font-medium">Age</th>
+                      <th className="px-4 py-3 font-medium">Tier</th>
+                      <th className="px-4 py-3 font-medium">Latency</th>
+                      <th className="px-4 py-3 font-medium">$/GB·mo</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-ink-100 dark:divide-night-400">
+                    {[
+                      ['0–7 days',   'CDN edge cache + S3 Standard', '~30ms',  '~$0.023'],
+                      ['7–90 days',  'S3 Standard',                  '~150ms', '~$0.023'],
+                      ['90+ days',   'S3 Standard-IA',               '~200ms', '~$0.0125'],
+                      ['1 year+',    'S3 Glacier Instant Retrieval', '~300ms', '~$0.004'],
+                    ].map(([age, tier, lat, cost]) => (
+                      <tr key={age} className="dark:bg-night-200">
+                        <td className="px-4 py-3 font-medium text-ink-900 dark:text-night-900">{age}</td>
+                        <td className="px-4 py-3 text-ink-700 dark:text-night-700">{tier}</td>
+                        <td className="px-4 py-3 font-mono text-xs text-ink-700 dark:text-night-800">{lat}</td>
+                        <td className="px-4 py-3 font-mono text-xs text-ink-700 dark:text-night-800">{cost}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <Callout variant="insight" title="Content-addressed storage = free deduplication">
+                <p className="m-0">
+                  Key media objects by SHA-256 of their plaintext (or, with E2E, by a hash of the encrypted blob plus a per-chat key). The forwarded-meme problem solves itself: a viral image sent to 10M chats stores once. Reference counts on the metadata row track when the underlying blob can be garbage-collected. WhatsApp's "forwarded many times" label is partly UX, partly a side-effect of this dedup-tracking infrastructure.
+                </p>
+              </Callout>
+            </Section>
+
+            {/* ── 13. E2E ENCRYPTION ── */}
             <Section
               id="e2e"
-              number={11}
+              number={13}
               eyebrow="Security layer"
               title="End-to-end encryption — the Signal Protocol"
               intro="E2E encryption means the server stores ciphertext it cannot decrypt. Even if Cassandra is compromised, message content is safe. The Signal Protocol (used by WhatsApp, Signal, iMessage) is the industry standard."
@@ -661,19 +759,80 @@ Bob wants to message Alice:
                 </p>
               </Callout>
 
-              <h3 className="text-xl font-serif font-medium text-ink-900 dark:text-night-900 mt-8 mb-3">Multi-device challenge</h3>
-              <p>
-                If Alice uses WhatsApp on both an iPhone and a MacBook, messages must be independently decryptable on both devices.
-                The Signal Protocol handles this with <strong>sender keys</strong>: the sender encrypts the message once using
-                a shared group key, then encrypts the group key separately for each device. Each device decrypts the group key
-                with its own identity key, then decrypts the message.
+              <p className="mt-8 text-sm text-ink-500 dark:text-night-700 italic">
+                E2E gets harder when one user has multiple devices — every message must be independently encryptable for each. That problem deserves its own section: see <a href="#multi-device" className="text-blue-600 dark:text-blue-300 not-italic font-medium">Multi-device sync</a>.
               </p>
             </Section>
 
-            {/* ── 12. FAILURE MODES ── */}
+            {/* ── 14. MULTI-DEVICE SYNC ── */}
+            <Section
+              id="multi-device"
+              number={14}
+              eyebrow="The N-device problem"
+              title="Multi-device sync — one user, many endpoints"
+              intro="An iPhone + iPad + MacBook + WhatsApp Web is four endpoints for one identity. Each must receive every message, send messages all four can decrypt, and stay in order — even if one is offline for a week."
+            >
+              <p>
+                This is the part of chat that breaks the cleanest mental models. The 1:1 design assumes <Code inline>userId → serverId</Code>. With multi-device, it's really <Code inline>(userId, deviceId) → serverId</Code>, and a "user" is a fan-out group of size N.
+              </p>
+
+              <h3 className="text-xl font-serif font-medium text-ink-900 dark:text-night-900 mt-6 mb-3">Device registry</h3>
+              <p>
+                A separate Cassandra table tracks every active device per user, plus its public key for E2E:
+              </p>
+              <Code lang="device_registry table">
+{`CREATE TABLE device_registry (
+  user_id        uuid,
+  device_id      uuid,
+  identity_key   blob,         -- public IK for Signal Protocol
+  registration_id int,         -- monotonic, incremented on key rotation
+  device_type    text,         -- 'ios' | 'android' | 'web' | 'desktop'
+  last_seen      timestamp,
+  removed_at     timestamp,    -- null = active
+  PRIMARY KEY (user_id, device_id)
+);
+
+# "What are User B's active devices?"
+SELECT device_id, identity_key, registration_id
+FROM device_registry
+WHERE user_id = ? AND removed_at IS NULL;`}
+              </Code>
+
+              <h3 className="text-xl font-serif font-medium text-ink-900 dark:text-night-900 mt-8 mb-3">Send path with N devices</h3>
+              <p>
+                The sender's client now does the N-device fanout itself (the server can't, because of E2E). For each recipient device:
+              </p>
+              <ol>
+                <li>Fetch the recipient's <strong>device list</strong> + per-device prekey bundle from the server.</li>
+                <li>Run X3DH per device → produce N independently encrypted ciphertexts.</li>
+                <li>Send N ciphertexts in a single WS frame keyed by <Code inline>deviceId</Code>.</li>
+                <li>Message Service writes <strong>one row</strong> with the multi-blob payload, then routes to each <Code inline>(userId, deviceId)</Code> via Connection Manager.</li>
+              </ol>
+              <p>
+                The sender's <em>own</em> other devices are also recipients — sending from your phone must appear on your laptop. This is the "self-fanout" leg: the phone encrypts the same plaintext separately for the laptop's identity key, and the message includes the sender's own deviceId list as recipients.
+              </p>
+
+              <h3 className="text-xl font-serif font-medium text-ink-900 dark:text-night-900 mt-8 mb-3">Adding a new device mid-conversation</h3>
+              <p>
+                User adds a 4th device. Three problems appear immediately:
+              </p>
+              <ul>
+                <li><strong>Backfill.</strong> The new device has no message history. Either fetch from server (works only if the server stored ciphertexts the new device can decrypt — usually it can't, by E2E design) or restore from a primary device (Signal/WhatsApp encrypted-backup pattern).</li>
+                <li><strong>Re-keying.</strong> All active sessions must learn the new device's identity key. The next message any peer sends triggers a "device list changed" event, forcing session re-establishment.</li>
+                <li><strong>Trust prompt.</strong> Other users see "Alice added a new device — verify?" — exposing the security-number check most users skip.</li>
+              </ul>
+
+              <Callout variant="warning" title="Multi-device is where chat designs leak the most">
+                <p className="m-0">
+                  "Just send to all devices" is the trap. It hides three real problems: (a) ordering across devices when one is offline; (b) read receipts — does it count as read when one device opens it? (c) ephemeral messages and disappearing-message timers — should they expire per-device or globally? Real systems make different choices: WhatsApp ties read state to "any device read it"; Signal expires per-device; Telegram has a "primary device" concept. There's no single correct answer; the answer must be a deliberate product choice.
+                </p>
+              </Callout>
+            </Section>
+
+            {/* ── 15. FAILURE MODES ── */}
             <Section
               id="failure"
-              number={12}
+              number={15}
               eyebrow="Production reality"
               title="Failure modes & recovery"
               intro="Every major component can fail. The design must degrade gracefully — a crashed chat server must not mean message loss."
@@ -745,10 +904,181 @@ Bob wants to message Alice:
               </div>
             </Section>
 
-            {/* ── 13. TRADEOFFS ── */}
+            {/* ── 16. RATE LIMITING ── */}
+            <Section
+              id="rate-limit"
+              number={16}
+              eyebrow="Abuse defense"
+              title="Rate limiting & abuse — the WebSocket layer is the front door"
+              intro="One compromised account can produce 100K msgs/sec from a single laptop if you let it. Per-user, per-IP, and per-conversation limits at the WS layer are the only thing standing between you and a self-inflicted DDoS."
+            >
+              <h3 className="text-xl font-serif font-medium text-ink-900 dark:text-night-900 mt-2 mb-3">Three orthogonal limits</h3>
+              <div className="bg-white dark:bg-night-200 border border-ink-200 dark:border-night-400 rounded-xl overflow-hidden my-4 not-prose">
+                <table className="w-full text-sm">
+                  <thead className="bg-cream-100 dark:bg-night-300 text-left text-xs text-ink-500 dark:text-night-600 uppercase tracking-wider border-b border-ink-200 dark:border-night-400">
+                    <tr>
+                      <th className="px-4 py-3 font-medium">Scope</th>
+                      <th className="px-4 py-3 font-medium">Typical limit</th>
+                      <th className="px-4 py-3 font-medium">What it stops</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-ink-100 dark:divide-night-400">
+                    {[
+                      ['Per user',           '20 msgs/sec, 1000/min', 'Compromised account spamming groups'],
+                      ['Per IP',             '50 msgs/sec',           'Bot farm sharing one egress IP'],
+                      ['Per (user, chat)',   '5 msgs/sec',            'Floods inside a single conversation'],
+                      ['Per group write',    '100 msgs/sec/group',    'Pinned-channel write storms'],
+                      ['Per device WS conn', '100 frames/sec',        'Malicious or buggy clients'],
+                    ].map(([scope, limit, blocks]) => (
+                      <tr key={scope} className="dark:bg-night-200">
+                        <td className="px-4 py-3 font-medium text-ink-900 dark:text-night-900">{scope}</td>
+                        <td className="px-4 py-3 font-mono text-xs text-ink-700 dark:text-night-800">{limit}</td>
+                        <td className="px-4 py-3 text-ink-700 dark:text-night-700">{blocks}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <h3 className="text-xl font-serif font-medium text-ink-900 dark:text-night-900 mt-8 mb-3">Token bucket on Redis</h3>
+              <Code lang="Per-user token bucket (Redis Lua)">
+{`-- 20 tokens/sec, burst capacity 40
+-- Atomic Lua script — no race between check and decrement
+local key      = KEYS[1]              -- "rl:user:{userId}"
+local capacity = tonumber(ARGV[1])    -- 40
+local rate     = tonumber(ARGV[2])    -- 20 (refill/sec)
+local now      = tonumber(ARGV[3])
+
+local tokens = tonumber(redis.call('HGET', key, 'tokens')) or capacity
+local last   = tonumber(redis.call('HGET', key, 'last'))   or now
+tokens = math.min(capacity, tokens + (now - last) * rate)
+
+if tokens < 1 then return 0 end       -- reject
+tokens = tokens - 1
+redis.call('HMSET', key, 'tokens', tokens, 'last', now)
+redis.call('EXPIRE', key, 60)
+return 1                              -- accept`}
+              </Code>
+
+              <h3 className="text-xl font-serif font-medium text-ink-900 dark:text-night-900 mt-8 mb-3">Where to enforce — the WebSocket frame, not the API gateway</h3>
+              <p>
+                A typical mistake: putting rate limits at the HTTP API gateway. WebSocket connections upgrade <em>once</em>, then every message frame bypasses the gateway entirely. The Chat Server must enforce per-frame, in-process, before publishing to Kafka. A single Redis Lua check is ~0.1ms — well within the latency budget.
+              </p>
+
+              <h3 className="text-xl font-serif font-medium text-ink-900 dark:text-night-900 mt-8 mb-3">Abuse signals beyond rate</h3>
+              <ul>
+                <li><strong>New-account velocity.</strong> Account &lt; 24h old + 50 different recipients = almost always spam. Step up to CAPTCHA or shadow-block.</li>
+                <li><strong>Forward-frequency tagging.</strong> WhatsApp's "forwarded many times" UI is rate-limit theater for users — but it's backed by the same content-hash counter that detects mass-forwarded misinformation.</li>
+                <li><strong>Reported-spammer feedback loop.</strong> User reports flow into a moderation Kafka topic; an abuse model rescores accounts every minute and tightens their limits.</li>
+              </ul>
+
+              <Callout variant="warning" title="E2E forces metadata-only moderation">
+                <p className="m-0">
+                  You can't read content with E2E enabled. Spam classification has to work from metadata alone: account age, recipient diversity, send rate, network ASN, device fingerprint, recipient reports. The model is necessarily weaker than a content classifier — accept that and bias toward false negatives over false positives. Aggressive false-positive rate-limiting is how WhatsApp got into trouble in India during elections.
+                </p>
+              </Callout>
+            </Section>
+
+            {/* ── 17. MULTI-REGION ── */}
+            <Section
+              id="multi-region"
+              number={17}
+              eyebrow="Geo distribution"
+              title="Multi-region — what stays local, what crosses oceans"
+              intro="A 50M-user chat system with a single region works for a hackathon and nothing else. Multi-region forces hard choices: latency vs consistency for the Connection Manager, replication topology for messages, and a clear story for cross-region delivery."
+            >
+              <p>
+                The single-region design is roughly right for one continent. Going global adds three problems and one easy win.
+              </p>
+
+              <h3 className="text-xl font-serif font-medium text-ink-900 dark:text-night-900 mt-6 mb-3">Home-region pinning</h3>
+              <p>
+                Each user has a <strong>home region</strong> (registered or nearest by latency). All long-lived state — Connection Manager entry, Cassandra rows, presence — lives there. WebSocket connections from elsewhere in the world get routed back home via Anycast or GeoDNS at connect time.
+              </p>
+              <ul>
+                <li><strong>Pro:</strong> One source of truth per user. No multi-region writes to coordinate. Cassandra stays inside one region's <Code inline>NetworkTopologyStrategy</Code> replica set.</li>
+                <li><strong>Con:</strong> A user traveling Tokyo→London adds 200ms RTT to every message. Acceptable for chat (humans tolerate it); not acceptable for video calls (route those separately via WebRTC TURN servers in the local region).</li>
+              </ul>
+
+              <h3 className="text-xl font-serif font-medium text-ink-900 dark:text-night-900 mt-8 mb-3">Cross-region delivery</h3>
+              <p>
+                Alice (home: us-east) messages Bob (home: ap-south). Single-region path no longer applies:
+              </p>
+              <ol>
+                <li>Alice's Chat Server writes to <strong>us-east Kafka</strong> as usual (key=chatId, durable locally).</li>
+                <li>A region-bridge consumer in us-east publishes to a <strong>cross-region topic</strong> (Kafka MirrorMaker 2 or Confluent Cluster Linking) replicating to ap-south.</li>
+                <li>ap-south's Message Service reads, writes to ap-south Cassandra, then routes to Bob via ap-south's Connection Manager.</li>
+              </ol>
+              <p>
+                Replication adds ~100–250ms cross-ocean. For 1:1 messages that's invisible. For typing indicators it isn't — so typing indicators <em>do not cross regions</em>. Each region drops them at the edge.
+              </p>
+
+              <h3 className="text-xl font-serif font-medium text-ink-900 dark:text-night-900 mt-8 mb-3">Connection Manager — local-only</h3>
+              <p>
+                The Connection Manager is <strong>per-region</strong>, never replicated globally. The router asks "does the local region have a WS for Bob?" If no, it forwards via the cross-region topic. Trying to keep a global Connection Manager consistent at WebSocket connect/disconnect rates (50M × multi-toggle/day = billions of ops/day, multi-region quorum on each = nope) is impossible.
+              </p>
+
+              <h3 className="text-xl font-serif font-medium text-ink-900 dark:text-night-900 mt-8 mb-3">Cassandra: local writes, async global replication</h3>
+              <p>
+                Each region has its own keyspace replicated within the region (<Code inline>{'NetworkTopologyStrategy {us-east: 3}'}</Code>). For cross-region history (Bob switches devices and lands in ap-south for the first time), the same MirrorMaker pipeline back-fills ap-south's Cassandra. The recipient device sees a small "loading older messages" delay.
+              </p>
+
+              <Callout variant="insight" title="The easy win: PoP-terminated WebSockets">
+                <p className="m-0">
+                  Even before adding multiple home regions, terminate WebSockets at the nearest CloudFront/Cloudflare PoP and tunnel back to the chat-server region over a warm pre-established connection. Saves the TLS handshake's 4 RTTs for international users (~300ms → ~30ms first byte). This is what pushed WhatsApp's perceived latency from "fine" to "feels local" in Asia and Africa. Single-region behind a global PoP layer is the right second step before going truly multi-region.
+                </p>
+              </Callout>
+            </Section>
+
+            {/* ── 18. 10× SCALE ── */}
+            <Section
+              id="scale-10x"
+              number={18}
+              eyebrow="The follow-up question"
+              title="What changes at 500M concurrent users?"
+              intro={'"OK, now make it 10× bigger." This is the most common follow-up. Most parts of the design hold up; a handful break in surprising ways.'}
+            >
+              <div className="bg-white dark:bg-night-200 border border-ink-200 dark:border-night-400 rounded-xl overflow-hidden my-4 not-prose">
+                <table className="w-full text-sm">
+                  <thead className="bg-cream-100 dark:bg-night-300 text-left text-xs text-ink-500 dark:text-night-600 uppercase tracking-wider border-b border-ink-200 dark:border-night-400">
+                    <tr>
+                      <th className="px-4 py-3 font-medium">Component</th>
+                      <th className="px-4 py-3 font-medium">At 50M</th>
+                      <th className="px-4 py-3 font-medium">At 500M — what breaks</th>
+                      <th className="px-4 py-3 font-medium">Fix</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-ink-100 dark:divide-night-400 text-xs">
+                    {[
+                      ['Chat Servers',       '625 boxes',                 'Linear → 6,250 boxes. Manageable.',                            'Keep going. Hot/warm pool by region.'],
+                      ['Connection Manager', 'Single Redis Cluster, 3×3', '25GB hot. Single Redis cluster strained, cross-shard latency.','Shard by userId hash; one cluster per region; second tier of regional Redis proxies.'],
+                      ['Kafka',              '64 partitions',             'Partition count too low; head-of-line blocking on hot chats.', 'Partitions × 10 → 640. Tune num.replica.fetchers; tiered storage.'],
+                      ['Cassandra writes',   '12 nodes',                  'Write amplification at 20M msgs/sec saturates compaction I/O.','Migrate to ScyllaDB (shard-per-core), or split keyspace by region.'],
+                      ['Push (APNS/FCM)',    'Direct integration',        'Per-app token rate limits hit; APNS chokes during peak events.','Aggregator/batcher tier (one connection per million tokens) + provider-side fanout with collapsing.'],
+                      ['Cross-region',       'us-east + ap-south',        'Two regions cover ~60% of traffic, rest sees 200ms+ RTT.',     '8+ regions; Anycast CM routing; per-region warm caches at PoP.'],
+                    ].map(([comp, atSmall, breaks, fix]) => (
+                      <tr key={comp} className="dark:bg-night-200">
+                        <td className="px-4 py-3 font-medium text-ink-900 dark:text-night-900">{comp}</td>
+                        <td className="px-4 py-3 font-mono text-xs text-ink-700 dark:text-night-800">{atSmall}</td>
+                        <td className="px-4 py-3 text-ink-700 dark:text-night-700">{breaks}</td>
+                        <td className="px-4 py-3 text-ink-700 dark:text-night-700">{fix}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <Callout variant="interview" title="The question behind the question">
+                <p className="m-0">
+                  <em>"What changes at 10×?"</em> isn't really about 10×. The interviewer wants to see whether you know which components scale linearly (chat servers, message-service consumers, push workers) and which hit non-linear walls (compaction I/O, cross-shard transactions, push-provider rate caps). Answer the linear ones in one sentence each and spend the time on the non-linear ones — Cassandra compaction, cross-region replication, push aggregation. Those are the parts that require <em>different</em> systems, not just more boxes.
+                </p>
+              </Callout>
+            </Section>
+
+            {/* ── 19. TRADEOFFS ── */}
             <Section
               id="tradeoffs"
-              number={13}
+              number={19}
               eyebrow="Production perspective"
               title="What the design gets right — and what it glosses over"
               intro="Being able to articulate the gaps is what separates a good candidate from a great one."
@@ -769,15 +1099,17 @@ Bob wants to message Alice:
                 </div>
 
                 <div className="bg-rust-50 border border-rust-200 rounded-xl p-5">
-                  <div className="text-xs font-semibold text-rust-700 uppercase tracking-wider mb-3">What gets glossed over</div>
+                  <div className="text-xs font-semibold text-rust-700 uppercase tracking-wider mb-3">Still under-explored</div>
                   <ul className="space-y-2 text-sm text-ink-800">
-                    <li>⚠ <strong>Multi-device sync</strong> — messages sent from phone must appear on laptop. Sender keys + device registry.</li>
-                    <li>⚠ <strong>Message search</strong> — full-text search over E2E-encrypted messages requires client-side index (tricky).</li>
-                    <li>⚠ <strong>Spam / abuse</strong> — content moderation can't use plaintext content with E2E-enc. Must use metadata signals.</li>
-                    <li>⚠ <strong>Multi-region</strong> — this is single-region. Cross-region adds replication lag + conflict resolution for presence.</li>
-                    <li>⚠ <strong>Media pipeline</strong> — images/video go through a separate upload/CDN path not shown here.</li>
-                    <li>⚠ <strong>Rate limiting</strong> — nothing stops one user from flooding 2M msgs/sec alone. Per-user quota at the WS layer.</li>
+                    <li>⚠ <strong>Message search</strong> — full-text search over E2E ciphertext is fundamentally hard; needs client-side index synced across devices.</li>
+                    <li>⚠ <strong>Voice / video calls</strong> — separate WebRTC pipeline (signaling on chat infra, media via TURN). Not covered here.</li>
+                    <li>⚠ <strong>Disappearing messages & retention</strong> — TTL on messages, per-chat policy, GDPR right-to-erasure interplay with E2E backups.</li>
+                    <li>⚠ <strong>Story / status / reactions</strong> — short-lived broadcast surface, separate read model from messaging.</li>
+                    <li>⚠ <strong>Bot / business APIs</strong> — different rate limits, different consent UX, different metadata exposure.</li>
                   </ul>
+                  <div className="text-[11px] text-ink-500 mt-3 italic">
+                    Multi-device, multi-region, media, rate limiting, and abuse moderation each have their own section above.
+                  </div>
                 </div>
               </div>
 
@@ -788,10 +1120,10 @@ Bob wants to message Alice:
               </Callout>
             </Section>
 
-            {/* ── 14. DEPLOYMENT ── */}
+            {/* ── 20. DEPLOYMENT ── */}
             <Section
               id="deployment"
-              number={14}
+              number={20}
               eyebrow="Topology"
               title="Realistic deployment picture"
               intro="How many servers, what managed services, where to run them."
@@ -831,75 +1163,14 @@ Bob wants to message Alice:
                   WebSockets require TCP-level pass-through. An L7 (HTTP) load balancer that doesn't explicitly support WebSocket upgrades will terminate the connection and fail the handshake. AWS ALB supports WebSockets (since 2018) via "sticky sessions" targeting — but for 50M concurrent connections, an L4 NLB with IP pass-through is more appropriate. The LB must also not timeout long-idle WebSocket connections — configure idle timeout to at least 30 minutes (or disable, relying on WS PING/PONG).
                 </p>
               </Callout>
+
+              <Callout variant="warning" title="Graceful shutdown — the deploy gotcha NLB hides from you">
+                <p className="m-0">
+                  An L4 NLB doesn't speak HTTP, so there's no <Code inline>Connection: close</Code> primitive — you can't ask clients to drain. When you deploy a new chat-server version, naïvely terminating a host kicks 80K clients into reconnect (WS code 1006 ≈ "abnormal close"). The fix is app-level: send a custom <Code inline>{'{"type":"server_going_away","reconnect_in":3000}'}</Code> WS frame before the process exits, with a randomized 0–30s delay so all 80K don't reconnect in the same second. Then deregister from the NLB target group, wait for the drain timeout, and exit. WhatsApp and Slack both do this; without it, every deploy looks like a partial outage.
+                </p>
+              </Callout>
             </Section>
 
-            {/* Footer nav */}
-            <motion.div
-              className="mt-16 pt-8 border-t border-ink-200/60 dark:border-night-400/40 flex items-center justify-between"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-            >
-              <Link
-                to="/q/url-shortener"
-                className="inline-flex items-center gap-1.5 text-sm text-ink-500 dark:text-night-700 hover:text-ink-900 dark:hover:text-night-900 group"
-              >
-                <ArrowLeft size={14} className="group-hover:-translate-x-0.5 transition-transform" />
-                Q1 — URL Shortener
-              </Link>
-              <Link
-                to="/"
-                className="inline-flex items-center gap-1.5 text-sm text-ink-500 dark:text-night-700 hover:text-ink-900 dark:hover:text-night-900 group"
-              >
-                All questions
-                <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
-              </Link>
-            </motion.div>
-          </div>{/* end content */}
-        </div>{/* end grid */}
-      </div>{/* end container */}
-    </div>
-  );
-}
-
-/* Mobile TOC */
-function MobileTOC({ sections, active }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="lg:hidden mb-8">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full glass-card rounded-xl px-4 py-3 flex items-center justify-between text-sm font-medium text-ink-700 dark:text-night-800"
-      >
-        <span>
-          <span className="text-ink-400 dark:text-night-600 mr-1.5">§</span>
-          {sections.find((s) => s.id === active)?.label || 'On this page'}
-        </span>
-        <motion.span animate={{ rotate: open ? 180 : 0 }} className="text-ink-400 dark:text-night-600">▾</motion.span>
-      </button>
-      {open && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          className="glass-card rounded-xl mt-2 p-3 space-y-0.5 overflow-hidden"
-        >
-          {sections.map((s, i) => (
-            <a
-              key={s.id}
-              href={`#${s.id}`}
-              onClick={() => setOpen(false)}
-              className={`block px-3 py-2 rounded-lg text-sm transition ${
-                active === s.id
-                  ? 'bg-blue-500/10 text-blue-600 dark:text-blue-300 font-medium'
-                  : 'text-ink-600 dark:text-night-700 hover:bg-ink-100/50 dark:hover:bg-night-300/30'
-              }`}
-            >
-              <span className="font-mono text-[10px] opacity-50 mr-2">{String(i + 1).padStart(2, '0')}</span>
-              {s.label}
-            </a>
-          ))}
-        </motion.div>
-      )}
-    </div>
+    </DeepDiveLayout>
   );
 }

@@ -200,7 +200,7 @@ export const questions = [
   },
   {
     "number": 3,
-    "slug": "design-a-news-feed-timeline-twitter-instagram",
+    "slug": "news-feed",
     "title": "Design a News Feed / Timeline (Twitter / Instagram)",
     "difficulty": "Hard",
     "frequency": "Very High",
@@ -290,11 +290,11 @@ export const questions = [
     ],
     "bucket": 1,
     "tier": null,
-    "status": "coming-soon"
+    "status": "available"
   },
   {
     "number": 4,
-    "slug": "design-youtube-video-streaming-platform",
+    "slug": "youtube",
     "title": "Design YouTube / Video Streaming Platform",
     "difficulty": "Hard",
     "frequency": "Very High",
@@ -388,7 +388,7 @@ export const questions = [
     ],
     "bucket": 1,
     "tier": null,
-    "status": "coming-soon"
+    "status": "available"
   },
   {
     "number": 5,

@@ -1,11 +1,8 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import { motion, useScroll, useSpring } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';
 import Section from '../../components/ui/Section';
 import Callout from '../../components/ui/Callout';
 import Code from '../../components/ui/Code';
 import Stat from '../../components/ui/Stat';
+import DeepDiveLayout from '../../components/DeepDiveLayout';
 import ArchitectureDiagram from './diagrams/ArchitectureDiagram';
 import ReadFunnel from './diagrams/ReadFunnel';
 import ConnectionPoolViz from './diagrams/ConnectionPoolViz';
@@ -35,129 +32,22 @@ const SECTIONS = [
   { id: 'deployment', label: 'Deployment' },
 ];
 
-function useActiveSection(sectionIds) {
-  const [active, setActive] = useState(sectionIds[0]);
-
-  useEffect(() => {
-    const observers = [];
-    const visibleSections = new Map();
-
-    sectionIds.forEach((id) => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      const obs = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) visibleSections.set(id, entry.intersectionRatio);
-          else visibleSections.delete(id);
-
-          // pick the first visible section in document order
-          for (const sid of sectionIds) {
-            if (visibleSections.has(sid)) { setActive(sid); break; }
-          }
-        },
-        { rootMargin: '-80px 0px -60% 0px', threshold: [0, 0.25] }
-      );
-      obs.observe(el);
-      observers.push(obs);
-    });
-
-    return () => observers.forEach((o) => o.disconnect());
-  }, [sectionIds]);
-
-  return active;
-}
-
 export default function UrlShortener() {
-  const contentRef = useRef(null);
-  const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, { stiffness: 120, damping: 30 });
-  const activeSection = useActiveSection(SECTIONS.map((s) => s.id));
-
-  useEffect(() => {
-    document.title = 'Design a URL Shortener — System Design Bible';
-  }, []);
-
   return (
-    <div className="gradient-mesh min-h-screen">
-      {/* Reading progress bar */}
-      <motion.div
-        className="fixed top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-rust-400 via-rust-500 to-teal-400 origin-left z-50"
-        style={{ scaleX }}
-      />
-
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Back link */}
-        <motion.div
-          initial={{ opacity: 0, x: -10 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          <Link
-            to="/"
-            className="inline-flex items-center gap-1.5 text-sm text-ink-500 dark:text-night-700 hover:text-ink-900 dark:hover:text-night-900 mb-6 group"
-          >
-            <ArrowLeft size={14} className="group-hover:-translate-x-0.5 transition-transform" /> All questions
-          </Link>
-        </motion.div>
-
-        {/* Header */}
-        <motion.header
-          className="pb-10 mb-4 border-b border-ink-200/60 dark:border-night-400/40"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-        >
-          <div className="flex items-center gap-2 mb-4">
-            <span className="text-xs font-medium px-2.5 py-1 rounded-lg glass-pill border-teal-200/60 dark:border-teal-500/30 text-teal-700 dark:text-teal-300">
-              Easy
-            </span>
-            <span className="text-xs font-medium px-2.5 py-1 rounded-lg glass-pill text-ink-700 dark:text-night-800">
-              Very High frequency
-            </span>
-            <span className="text-xs text-ink-400 dark:text-night-600 ml-2 font-medium">Google · Amazon · Meta · Uber</span>
-          </div>
-          <h1 className="font-serif text-4xl sm:text-5xl font-medium text-ink-900 dark:text-night-900 tracking-tight mb-3">
-            Design a URL Shortener
-          </h1>
-          <p className="text-lg text-ink-500 dark:text-night-700">TinyURL / Bit.ly</p>
-        </motion.header>
-
-        {/* Main layout: sidebar TOC + content */}
-        <div className="lg:grid lg:grid-cols-[220px_1fr] lg:gap-10 mt-8">
-          {/* Sticky sidebar TOC */}
-          <aside className="hidden lg:block">
-            <nav className="sticky top-20">
-              <div className="text-[10px] font-semibold text-ink-400 dark:text-night-600 uppercase tracking-widest mb-4">
-                On this page
-              </div>
-              <ul className="space-y-0.5 border-l border-ink-200/50 dark:border-night-400/30">
-                {SECTIONS.map((s, i) => {
-                  const isActive = activeSection === s.id;
-                  return (
-                    <li key={s.id}>
-                      <a
-                        href={`#${s.id}`}
-                        className={`flex items-center gap-2 pl-4 py-1.5 text-sm transition-all border-l-2 -ml-[1px] ${
-                          isActive
-                            ? 'border-rust-500 dark:border-rust-400 text-rust-600 dark:text-rust-300 font-medium'
-                            : 'border-transparent text-ink-500 dark:text-night-700 hover:text-ink-800 dark:hover:text-night-800 hover:border-ink-300 dark:hover:border-night-500'
-                        }`}
-                      >
-                        <span className="font-mono text-[10px] tabular-nums opacity-60">{String(i + 1).padStart(2, '0')}</span>
-                        {s.label}
-                      </a>
-                    </li>
-                  );
-                })}
-              </ul>
-            </nav>
-          </aside>
-
-          {/* Mobile TOC (collapsible, shows above content on small screens) */}
-          <MobileTOC sections={SECTIONS} active={activeSection} />
-
-          {/* Content area */}
-          <div ref={contentRef} className="min-w-0">
+    <DeepDiveLayout
+      documentTitle="Design a URL Shortener — System Design Bible"
+      theme="rust"
+      sections={SECTIONS}
+      header={{
+        difficulty: 'Easy',
+        frequency: 'Very High',
+        companies: 'Google · Amazon · Meta · Uber',
+        title: 'Design a URL Shortener',
+        subtitle: 'TinyURL / Bit.ly',
+      }}
+      next={{ to: '/q/chat-system', label: 'Q2 — Chat System' }}
+      prev={null}
+    >
 
       {/* === 1. REQUIREMENTS === */}
       <Section
@@ -761,67 +651,7 @@ counter = 3.5T   → "zzzzzzz"  // last 7-char key`}
         </p>
       </Section>
 
-      {/* Footer nav */}
-      <motion.div
-        className="mt-16 pt-8 border-t border-ink-200/60 dark:border-night-400/40 flex items-center justify-between"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-      >
-        <Link
-          to="/"
-          className="inline-flex items-center gap-1.5 text-sm text-ink-500 dark:text-night-700 hover:text-ink-900 dark:hover:text-night-900 group"
-        >
-          <ArrowLeft size={14} className="group-hover:-translate-x-0.5 transition-transform" /> All questions
-        </Link>
-        <div className="text-sm text-ink-400 dark:text-night-600">More questions coming soon</div>
-      </motion.div>
-          </div>{/* end content area */}
-        </div>{/* end grid */}
-      </div>{/* end max-w container */}
-    </div>
-  );
-}
-
-/* Mobile-only TOC dropdown */
-function MobileTOC({ sections, active }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="lg:hidden mb-8">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full glass-card rounded-xl px-4 py-3 flex items-center justify-between text-sm font-medium text-ink-700 dark:text-night-800"
-      >
-        <span>
-          <span className="text-ink-400 dark:text-night-600 mr-1.5">§</span>
-          {sections.find((s) => s.id === active)?.label || 'On this page'}
-        </span>
-        <motion.span animate={{ rotate: open ? 180 : 0 }} className="text-ink-400 dark:text-night-600">▾</motion.span>
-      </button>
-      {open && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          className="glass-card rounded-xl mt-2 p-3 space-y-0.5 overflow-hidden"
-        >
-          {sections.map((s, i) => (
-            <a
-              key={s.id}
-              href={`#${s.id}`}
-              onClick={() => setOpen(false)}
-              className={`block px-3 py-2 rounded-lg text-sm transition ${
-                active === s.id
-                  ? 'bg-rust-500/10 text-rust-600 dark:text-rust-300 font-medium'
-                  : 'text-ink-600 dark:text-night-700 hover:bg-ink-100/50 dark:hover:bg-night-300/30'
-              }`}
-            >
-              <span className="font-mono text-[10px] opacity-50 mr-2">{String(i + 1).padStart(2, '0')}</span>
-              {s.label}
-            </a>
-          ))}
-        </motion.div>
-      )}
-    </div>
+    </DeepDiveLayout>
   );
 }
 
