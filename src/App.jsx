@@ -7,6 +7,7 @@ import UrlShortener from './questions/url-shortener';
 import ChatSystem from './questions/chat-system';
 import NewsFeed from './questions/news-feed';
 import YouTube from './questions/youtube';
+import Uber from './questions/uber';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         <Route path="/q/chat-system" element={<ChatSystem />} />
         <Route path="/q/news-feed" element={<NewsFeed />} />
         <Route path="/q/youtube" element={<YouTube />} />
+        <Route path="/q/uber" element={<Uber />} />
         <Route path="/q/:slug" element={<QuestionPage />} />
       </Routes>
     </Layout>

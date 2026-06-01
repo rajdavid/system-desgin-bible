@@ -392,7 +392,7 @@ export const questions = [
   },
   {
     "number": 5,
-    "slug": "design-uber-ride-sharing-service",
+    "slug": "uber",
     "title": "Design Uber / Ride-Sharing Service",
     "difficulty": "Hard",
     "frequency": "Very High",
@@ -481,7 +481,7 @@ export const questions = [
     ],
     "bucket": 1,
     "tier": null,
-    "status": "coming-soon"
+    "status": "available"
   },
   {
     "number": 6,
