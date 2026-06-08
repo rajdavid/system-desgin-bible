@@ -6,7 +6,9 @@ import { useStreak } from '../hooks/useStreak';
 
 export default function Layout({ children }) {
   const location = useLocation();
-  const isHome = location.pathname === '/';
+  const path = location.pathname;
+  const isHome = path === '/';
+  const isQuestionDetail = path.startsWith('/q') || path === '/mock';
   const { theme, toggle } = useTheme();
   const { current: streak, isActiveToday } = useStreak();
 
@@ -26,14 +28,14 @@ export default function Layout({ children }) {
               whileTap={{ scale: 0.95 }}
               transition={{ type: 'spring', stiffness: 400, damping: 15 }}
             >
-              S
+              C
             </motion.div>
             <div className="leading-tight">
               <div className="font-serif font-semibold text-ink-900 dark:text-night-900 text-[15px] tracking-tight">
-                System Design Bible
+                Crux
               </div>
               <div className="text-[10px] text-ink-400 dark:text-night-600 font-medium tracking-wide">
-                265 deep-dive questions
+                System Design &amp; DSA
               </div>
             </div>
           </Link>
@@ -60,11 +62,11 @@ export default function Layout({ children }) {
 
             {!isHome && (
               <Link
-                to="/"
+                to={isQuestionDetail ? '/system-design' : '/'}
                 className="text-sm text-ink-500 dark:text-night-700 hover:text-ink-900 dark:hover:text-night-900 transition-colors flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg hover:bg-ink-100/50 dark:hover:bg-night-300/30"
               >
                 <BookOpen size={14} />
-                <span className="hidden sm:inline">Questions</span>
+                <span className="hidden sm:inline">{isQuestionDetail ? 'Questions' : 'Home'}</span>
               </Link>
             )}
             <a
